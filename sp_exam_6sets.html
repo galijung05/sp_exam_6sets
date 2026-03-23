@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP 실기 시험 시뮬레이터 — 6세트</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee;--paper:#fdfcf9;--ink:#1a1814;--ink2:#4a4640;--ink3:#8a857e;
+  --rule:#e0dbd2;--accent:#c8531a;--accent2:#1a6bc8;
+  --ok:#166534;--ok-bg:#f0fdf4;--ng:#991b1b;--ng-bg:#fef2f2;
+  --hint:#1e40af;--hint-bg:#eff6ff;--warn:#92400e;--warn-bg:#fffbeb;
+  --mono:'JetBrains Mono',monospace;--sans:'Noto Sans KR',sans-serif;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --sh-lg:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* HEADER */
+.exam-header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.exam-bar{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;gap:1rem}
+.exam-title{font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.9;display:flex;align-items:center;gap:10px}
+.set-badge{font-size:.65rem;padding:2px 8px;border-radius:3px;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.5px;cursor:pointer;transition:.15s}
+.set-badge:hover{background:rgba(255,255,255,.1)}
+.exam-meta{display:flex;align-items:center;gap:1.5rem}
+.timer-display{font-family:var(--mono);font-size:1.4rem;font-weight:700;letter-spacing:2px;color:#fff;transition:color .3s;min-width:90px;text-align:center}
+.timer-display.warn{color:#fbbf24}
+.timer-display.danger{color:#f87171;animation:blink .7s infinite}
+@keyframes blink{50%{opacity:.4}}
+.progress-pill{display:flex;align-items:center;gap:8px;font-size:.72rem;opacity:.8}
+.prog-dots{display:flex;gap:4px}
+.prog-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);transition:background .3s}
+.prog-dot.done{background:#4ade80}
+.prog-dot.active{background:#fff}
+.prog-dot.wrong-dot{background:#f87171}
+.score-pill{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.2);letter-spacing:.5px}
+
+/* SCREENS */
+.screen{display:none}.screen.on{display:block}
+
+/* SET SELECT SCREEN */
+.set-select{max-width:900px;margin:3rem auto;padding:0 1.5rem}
+.set-select h1{font-size:2rem;font-weight:900;letter-spacing:-1px;margin-bottom:.5rem}
+.set-select h1 em{font-style:normal;color:var(--accent)}
+.set-select p{color:var(--ink2);margin-bottom:2rem;line-height:1.8}
+.set-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+.set-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:1.4rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.set-card:hover{border-color:var(--ink3);transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.set-card.done-card{border-color:#bbf7d0}
+.set-card .set-num{font-family:var(--mono);font-size:2.5rem;font-weight:700;color:var(--rule);position:absolute;right:1rem;top:.5rem;letter-spacing:-2px}
+.set-card .set-label{font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem}
+.set-card .set-title{font-size:.95rem;font-weight:700;margin-bottom:.4rem;line-height:1.3}
+.set-card .set-desc{font-size:.75rem;color:var(--ink3);line-height:1.6}
+.set-card .set-score{margin-top:.8rem;font-size:.7rem;font-family:var(--mono);font-weight:700}
+.set-card .set-score.ok{color:var(--ok)}
+.set-card .set-score.ng{color:var(--ng)}
+.best-badge{display:inline-block;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:3px;background:#fef3c7;color:#78350f;border:1px solid #fcd34d;margin-left:6px;vertical-align:middle}
+
+/* INTRO SCREEN */
+.intro{max-width:720px;margin:4rem auto;padding:0 1.5rem}
+.exam-badge{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);border:1.5px solid var(--accent);padding:3px 10px;border-radius:3px;margin-bottom:1.2rem}
+.intro h1{font-size:2.4rem;font-weight:900;line-height:1.2;letter-spacing:-1.5px;margin-bottom:.8rem}
+.intro h1 span{color:var(--accent)}
+.intro p{color:var(--ink2);line-height:1.8;margin-bottom:2rem}
+.info-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:2rem}
+.info-card{background:var(--paper);padding:1.2rem;text-align:center}
+.info-card .num{font-size:1.8rem;font-weight:900;color:var(--accent);font-family:var(--mono);letter-spacing:-1px}
+.info-card .lbl{font-size:.72rem;color:var(--ink3);margin-top:2px;font-weight:500}
+.q-list{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:2rem}
+.q-item{display:flex;align-items:flex-start;gap:12px;padding:1rem 1.25rem;border-bottom:1px solid var(--rule)}
+.q-item:last-child{border-bottom:none}
+.q-num{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--accent);min-width:22px;padding-top:1px}
+.q-desc{font-size:.82rem;line-height:1.7}
+.q-desc .tag{font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:3px;background:#f0f0ea;color:var(--ink3);margin-left:4px;vertical-align:middle;font-family:var(--mono)}
+.start-btn{display:block;width:100%;padding:1rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--sans);letter-spacing:.5px;transition:all .2s}
+.start-btn:hover{background:#2c2820;transform:translateY(-1px);box-shadow:var(--sh-lg)}
+.back-btn{display:block;text-align:center;margin-top:.8rem;color:var(--ink3);font-size:.82rem;cursor:pointer;padding:.6rem}
+.back-btn:hover{color:var(--ink)}
+
+/* EXAM LAYOUT */
+.exam-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px);max-width:1200px;margin:0 auto}
+.sidebar{background:var(--paper);border-right:1px solid var(--rule);padding:1.5rem 1rem;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar-title{font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);padding:0 .5rem;margin-bottom:.8rem}
+.q-nav-item{display:flex;align-items:center;gap:10px;padding:.65rem .8rem;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:background .15s;border:1px solid transparent}
+.q-nav-item:hover{background:var(--bg)}
+.q-nav-item.active{background:var(--bg);border-color:var(--rule)}
+.q-nav-item.scored-ok{border-left:3px solid var(--ok)}
+.q-nav-item.scored-ng{border-left:3px solid var(--ng)}
+.q-nav-num{width:24px;height:24px;border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;font-family:var(--mono);flex-shrink:0;transition:all .2s}
+.q-nav-item.active .q-nav-num{background:var(--ink);color:#fff}
+.q-nav-item.scored-ok .q-nav-num{background:var(--ok);color:#fff}
+.q-nav-item.scored-ng .q-nav-num{background:var(--ng);color:#fff}
+.q-nav-text{font-size:.75rem;line-height:1.4;color:var(--ink2)}
+.q-nav-item.active .q-nav-text{color:var(--ink);font-weight:500}
+.data-ref{margin-top:1.5rem;padding:.8rem;background:var(--bg);border-radius:8px;border:1px solid var(--rule)}
+.data-ref-title{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:.6rem}
+.mini-table{width:100%;border-collapse:collapse;font-size:.68rem}
+.mini-table th{background:rgba(0,0,0,.05);padding:3px 5px;text-align:center;font-weight:600;color:var(--ink2);border:1px solid var(--rule)}
+.mini-table td{padding:3px 5px;border:1px solid var(--rule);text-align:center;color:var(--ink2)}
+.mini-table tr:nth-child(odd) td{background:rgba(255,255,255,.5)}
+
+/* Q CONTENT */
+.q-content{padding:2rem;max-width:760px}
+.q-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid var(--ink)}
+.q-category{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.q-title{font-size:1.25rem;font-weight:800;letter-spacing:-.5px;line-height:1.3}
+.q-points{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--ink3);flex-shrink:0}
+.q-points span{font-size:.75rem;color:var(--ink3)}
+.context-box{background:#f8f6f1;border:1px solid var(--rule);border-left:3px solid var(--ink);border-radius:0 6px 6px 0;padding:1rem 1.2rem;margin-bottom:1.5rem;font-size:.82rem;line-height:1.8;color:var(--ink2)}
+.context-box strong{color:var(--ink)}
+.context-box code{font-family:var(--mono);font-size:.78rem;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;color:var(--accent2)}
+.condition-tag{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:3px;margin:2px;font-family:var(--mono)}
+.cond-must{background:#fef3c7;color:#78350f;border:1px solid #fcd34d}
+.cond-info{background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd}
+.formula-area{margin-bottom:1.5rem}
+.formula-label{font-size:.72rem;font-weight:700;letter-spacing:.5px;color:var(--ink3);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.cell-ref{font-family:var(--mono);font-size:.68rem;color:var(--accent2);background:#dbeafe;padding:2px 6px;border-radius:3px}
+.formula-input{width:100%;font-family:var(--mono);font-size:.88rem;padding:12px 14px;border:1.5px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);transition:border-color .15s;outline:none;letter-spacing:.3px}
+.formula-input:focus{border-color:var(--accent2)}
+.formula-input.ok{border-color:var(--ok);background:var(--ok-bg)}
+.formula-input.ng{border-color:var(--ng);background:var(--ng-bg)}
+.formula-input::placeholder{color:var(--ink3);font-style:italic}
+.result-box{border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem;font-size:.82rem;line-height:1.7;display:none;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.result-box.show{display:block}
+.result-box.ok{background:var(--ok-bg);border:1px solid #bbf7d0;color:var(--ok)}
+.result-box.ng{background:var(--ng-bg);border:1px solid #fecaca;color:var(--ng)}
+.result-box.hint{background:var(--hint-bg);border:1px solid #bfdbfe;color:var(--hint)}
+.result-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;opacity:.8}
+.result-formula{font-family:var(--mono);font-size:.8rem;margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.5);border-radius:5px}
+.btn-group{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:8px;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s;letter-spacing:.3px}
+.btn:hover{border-color:var(--ink3);background:var(--bg)}
+.btn.submit{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.submit:hover{background:#2c2820}
+.btn.hint-btn{color:var(--accent2);border-color:#bfdbfe}
+.btn.hint-btn:hover{background:#eff6ff}
+.btn.next-btn{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.next-btn:hover{background:#a83f12}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* TABLE */
+.sp-table-wrap{overflow-x:auto;margin-bottom:1rem;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.sp-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.sp-table th{background:#f0ede6;padding:8px 10px;border:1px solid var(--rule);text-align:center;font-weight:700;white-space:nowrap;font-size:.72rem;letter-spacing:.3px}
+.sp-table td{border:1px solid var(--rule);padding:4px;text-align:center;background:var(--paper)}
+.sp-table td.fixed{padding:6px 10px;background:#faf8f4;color:var(--ink2);font-size:.73rem}
+.sp-table td.correct{background:#f0fdf4}
+.sp-table td.wrong{background:#fef2f2}
+.cell-inp{width:100%;border:none;background:transparent;font-family:var(--mono);font-size:.75rem;text-align:right;padding:4px 8px;color:var(--ink);outline:none}
+.cell-inp:focus{background:#fff3cd;border-radius:4px}
+.cell-inp.correct{color:var(--ok);font-weight:600}
+.cell-inp.wrong{color:var(--ng);font-weight:600}
+
+/* SORT */
+.sort-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:4px 0;background:var(--paper);border:1px solid var(--rule);border-radius:8px;cursor:grab;transition:all .15s;user-select:none}
+.sort-item:hover{border-color:var(--ink3);box-shadow:var(--sh)}
+.sort-item.dragging{opacity:.4;cursor:grabbing}
+.sort-item.over{border-color:var(--accent2);background:#eff6ff}
+.sort-handle{color:var(--ink3);font-size:1rem;flex-shrink:0}
+.sort-rank{font-family:var(--mono);font-size:.72rem;color:var(--ink3);min-width:20px}
+.sort-name{font-weight:700;min-width:55px}
+.sort-gender{font-size:.75rem;min-width:30px}
+.sort-gender.f{color:var(--accent)}
+.sort-gender.m{color:var(--accent2)}
+.sort-calc{font-family:var(--mono);font-size:.75rem;color:var(--ink2)}
+.sort-item.correct-row{border-color:var(--ok);background:var(--ok-bg)}
+.sort-item.wrong-row{border-color:var(--ng);background:var(--ng-bg)}
+
+/* RESULT */
+.result-screen{max-width:600px;margin:3rem auto;padding:0 1.5rem;text-align:center}
+.final-grade{font-size:5rem;font-weight:900;font-family:var(--mono);letter-spacing:-3px;line-height:1;margin-bottom:.5rem}
+.grade-A{color:var(--ok)}.grade-B{color:var(--accent2)}.grade-C{color:var(--accent)}.grade-F{color:var(--ng)}
+.final-label{font-size:.9rem;color:var(--ink2);margin-bottom:2rem}
+.score-breakdown{text-align:left;background:var(--paper);border:1px solid var(--rule);border-radius:12px;overflow:hidden;margin-bottom:2rem}
+.breakdown-row{display:flex;align-items:center;justify-content:space-between;padding:12px 1.2rem;border-bottom:1px solid var(--rule);font-size:.83rem}
+.breakdown-row:last-child{border-bottom:none}
+.breakdown-label{color:var(--ink2)}
+.breakdown-val{font-family:var(--mono);font-weight:700}
+.breakdown-val.ok{color:var(--ok)}.breakdown-val.ng{color:var(--ng)}
+.retry-btn{display:block;width:100%;padding:.9rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:.8rem;transition:all .2s}
+.retry-btn:hover{background:#2c2820}
+.retry-btn.outline{background:transparent;color:var(--ink);border:1.5px solid var(--rule)}
+.retry-btn.outline:hover{background:var(--bg)}
+
+@media(max-width:800px){
+  .exam-layout{grid-template-columns:1fr}
+  .sidebar{position:relative;top:0;height:auto;border-right:none;border-bottom:1px solid var(--rule);padding:1rem}
+  .set-grid{grid-template-columns:repeat(2,1fr)}
+  .gstep{flex-direction:column;gap:8px}
+}
+.gtab{padding:8px 16px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;font-family:var(--sans);white-space:nowrap}
+.gtab:hover{color:var(--ink)}
+.gtab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.gpanel{display:none}.gpanel.on{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.gsteps{display:flex;flex-direction:column;gap:10px}
+.gstep{display:flex;gap:14px;align-items:flex-start;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1rem 1.1rem}
+.gstep-num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;font-family:var(--mono)}
+.warn-num{background:var(--accent)}
+.gstep-body{flex:1}
+.gstep-title{font-size:.85rem;font-weight:700;margin-bottom:5px;line-height:1.4}
+.gstep-desc{font-size:.78rem;color:var(--ink2);line-height:1.75}
+.gstep-desc.gwarn{color:var(--ng);background:var(--ng-bg);border:1px solid #fecaca;border-radius:6px;padding:6px 10px;margin-bottom:6px;font-weight:500}
+.gcode{font-family:var(--mono);font-size:.74rem;background:#f0ede6;padding:8px 12px;border-radius:6px;margin:6px 0;color:var(--accent2);line-height:1.8;white-space:pre-wrap;border-left:3px solid var(--accent2)}
+.danger-card{background:var(--paper);border:1px solid #fecaca;border-radius:10px;padding:1rem}
+.danger-tag{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ng);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #fecaca}
+.danger-item{font-size:.78rem;color:var(--ink2);padding:4px 0;border-bottom:1px solid var(--rule);line-height:1.6;display:flex;gap:6px;align-items:flex-start}
+.danger-item::before{content:'✗';color:var(--ng);font-weight:700;flex-shrink:0;margin-top:1px}
+.danger-item:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- SET SELECT -->
+<div class="screen on" id="s-setselect">
+  <div class="exam-header">
+    <div class="exam-bar">
+      <div class="exam-title">SP 실기 시험 시뮬레이터</div>
+      <div class="exam-meta">
+        <div class="score-pill" id="globalRecord">전체 최고점: —</div>
+      </div>
+    </div>
+  </div>
+  <div class="set-select">
+    <div style="margin-top:2rem">
+      <div class="exam-badge">총 6세트 · 40분 타이머</div>
+      <h1>세트를 선택해서<br><em>시험을 시작하세요</em></h1>
+      <p>각 세트는 동일한 유형(①~⑩ 수식 + 정렬)이지만 업종·데이터·조건이 모두 다릅니다.<br>모든 세트를 완주하면 실전에서 어떤 데이터가 나와도 대응할 수 있습니다.</p>
+    </div>
+    <div class="set-grid" id="setGrid"></div>
+    <div style="background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1.2rem;font-size:.78rem;color:var(--ink2);line-height:1.8;margin-bottom:2.5rem">
+      <strong style="color:var(--ink)">공통 출제 구조 (모든 세트 동일)</strong><br>
+      Q1 성별변환(IF) · Q2 금액계산(IF중첩) · Q3 할인금액·계산금액 · Q4 평균(AVERAGE) · Q5 표 빈칸채우기 · Q6 SUMIF · Q7 COUNTIF·&"단위" · Q8 SUMIFS · Q9 정렬(SORT)
+    </div>
+
+    <!-- ══ 실제 작업·출력 가이드 ══ -->
+    <div style="border-top:2px solid var(--ink);padding-top:2rem;margin-bottom:3rem">
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem">실전 작업 & 출력 가이드</div>
+      <h2 style="font-size:1.4rem;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem">Excel 실제 작업 → 출력까지</h2>
+      <p style="font-size:.82rem;color:var(--ink2);margin-bottom:1.5rem;line-height:1.8">수식 암기 후 실제 Excel에서 이 순서대로 작업하세요. 출력 주의사항을 지키지 않으면 감점입니다.</p>
+
+      <!-- 탭 -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:1.5rem" id="guideTabs">
+        <button class="gtab on" onclick="switchGuide('work',this)">작업표 작성</button>
+        <button class="gtab" onclick="switchGuide('graph',this)">그래프</button>
+        <button class="gtab" onclick="switchGuide('pivot',this)">피벗테이블</button>
+        <button class="gtab" onclick="switchGuide('print',this)">인쇄·출력</button>
+        <button class="gtab" onclick="switchGuide('danger',this)">실격 주의</button>
+      </div>
+
+      <!-- 작업표 -->
+      <div class="gpanel on" id="gp-work">
+        <div class="gsteps">
+          <div class="gstep">
+            <div class="gstep-num">1</div>
+            <div class="gstep-body">
+              <div class="gstep-title">데이터 입력 (B5:G16)</div>
+              <div class="gstep-desc">음영 처리된 행/열 기준(4행, B~G열 헤더)은 입력하지 않습니다. 데이터만 B5부터 입력. 할인율은 <code>5%</code> 형태로 입력하면 자동으로 0.05 처리됩니다.</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">2</div>
+            <div class="gstep-body">
+              <div class="gstep-title">① 성별 수식 — H5에 입력 후 H16까지 채우기</div>
+              <div class="gcode">=IF(D5=1,"남성","여성")</div>
+              <div class="gstep-desc">H5 입력 → H5 선택 → Ctrl+C → H6:H16 선택 → Ctrl+V</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">3</div>
+            <div class="gstep-body">
+              <div class="gstep-title">② 주문금액 — I5에 입력 후 I16까지 채우기</div>
+              <div class="gcode">=IF(B5="라면",F5*5500,IF(B5="과자",F5*6500,F5*7700))</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">4</div>
+            <div class="gstep-body">
+              <div class="gstep-title">③④ 할인금액(J5) · 계산금액(K5) 입력 후 16행까지 채우기</div>
+              <div class="gcode">J5: =ROUND(I5*G5,0)
+K5: =I5-J5</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">5</div>
+            <div class="gstep-body">
+              <div class="gstep-title">정렬 먼저 실행 (수식 기재 전 필수!)</div>
+              <div class="gstep-desc gwarn">⚠️ 함수식 기재(⑦⑨⑪)는 반드시 정렬 후에 작성합니다. 정렬 전 기재하면 잘못된 셀 참조가 됩니다.</div>
+              <div class="gstep-desc">데이터 선택(B5:K16) → 데이터 탭 → 정렬 → 기준1: H열(성별) 사용자 지정 순서(여성→남성) → 기준2: K열(계산금액) 내림차순</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">6</div>
+            <div class="gstep-body">
+              <div class="gstep-title">⑤ 평균 (17행) · ⑥⑦⑧⑨⑩⑪ (18~23행)</div>
+              <div class="gcode">I17: =ROUND(AVERAGE(I5:I16),0)
+K18: =SUMIF(F5:F16,"&lt;20",I5:I16)
+K20: =COUNTIF(C5:C16,"*영*")&"명"
+K22: =SUMIFS(K5:K16,J5:J16,"&gt;=10000",J5:J16,"&lt;20000")</div>
+              <div class="gstep-desc">⑦⑨⑪(함수식 기재 셀): 해당 셀 서식을 <strong>텍스트</strong>로 변경 후 수식 그대로 타이핑. 앞에 <code>'</code>(작은따옴표) 붙여도 됨.</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">7</div>
+            <div class="gstep-body">
+              <div class="gstep-title">셀 서식 적용</div>
+              <div class="gstep-desc">금액 셀(I·J·K열): 통화 형식, ₩ 표시, 소수점 0자리, 천단위 콤마<br>숫자 셀 우측 정렬 / 문자 셀 가운데 정렬<br>제목(상품별 주문 금액 계산): 글꼴 크기 20pt</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그래프 -->
+      <div class="gpanel" id="gp-graph">
+        <div class="gsteps">
+          <div class="gstep">
+            <div class="gstep-num">1</div>
+            <div class="gstep-body">
+              <div class="gstep-title">데이터 범위 선택 — 여성 행만!</div>
+              <div class="gstep-desc gwarn">⚠️ 실격 사유: 전체 데이터를 선택하면 즉시 실격. 정렬 후 여성 행(C열 성명 + I열 주문금액 + K열 계산금액)만 Ctrl로 비연속 선택.</div>
+              <div class="gstep-desc">예) 정렬 후 여성이 5행~10행이면 → C5:C10, I5:I10, K5:K10을 Ctrl 누르고 선택</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">2</div>
+            <div class="gstep-body">
+              <div class="gstep-title">차트 삽입 → 혼합형 선택</div>
+              <div class="gstep-desc">삽입 탭 → 차트 → 콤보(혼합형) 선택<br>주문금액: <strong>묶은 세로 막대형</strong><br>계산금액: <strong>꺾은선형(표식 있음)</strong></div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">3</div>
+            <div class="gstep-body">
+              <div class="gstep-title">차트 요소 설정</div>
+              <div class="gstep-desc">제목: <strong>여성 주문 금액 계산</strong><br>X축 제목: <strong>성명</strong> / Y축 제목: <strong>금액</strong><br>범례: <strong>계산금액, 주문금액</strong> 순서<br>계산금액 계열만 → 데이터 레이블 추가 → 위쪽</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">4</div>
+            <div class="gstep-body">
+              <div class="gstep-title">위치·크기 조정</div>
+              <div class="gstep-desc">작업표 하단에 배치. 그래프 너비 = 작업표 너비에 맞춤. 작업표+그래프가 A4 1장에 들어가도록 인쇄 미리보기로 확인.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 피벗 -->
+      <div class="gpanel" id="gp-pivot">
+        <div class="gsteps">
+          <div class="gstep">
+            <div class="gstep-num">1</div>
+            <div class="gstep-body">
+              <div class="gstep-title">피벗테이블 삽입</div>
+              <div class="gstep-desc">범위 <strong>B4:K16</strong> 선택 → 삽입 탭 → 피벗테이블 → 새 워크시트</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">2</div>
+            <div class="gstep-body">
+              <div class="gstep-title">필드 배치</div>
+              <div class="gstep-desc">행 영역: <strong>할인율</strong> → <strong>성명</strong> 순서로 드래그<br>값 영역: <strong>할인금액 합계</strong>, <strong>계산금액 합계</strong><br>값 필드 설정 → 표시 형식 → 숫자 → 천단위 콤마, 소수점 0</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">3</div>
+            <div class="gstep-body">
+              <div class="gstep-title">그룹 추가</div>
+              <div class="gstep-desc">할인율 2% 셀 우클릭 → 그룹 → "비회원" 이름 입력<br>5%·7% Ctrl 선택 → 우클릭 → 그룹 → "회원"<br>10% 선택 → 우클릭 → 그룹 → "우수회원"<br>그룹 필드명을 "회원 구분"으로 변경</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">4</div>
+            <div class="gstep-body">
+              <div class="gstep-title">조정1 · 조정2 출력</div>
+              <div class="gstep-desc"><strong>조정1</strong>: 회원 구분 기준 — 비회원·우수회원 확장, 회원 축소(+ 클릭해서 접기)<br><strong>조정2</strong>: 할인율 기준 — 2% 확장, 5%·7%·10% 축소<br>각각 A4 1/2장 크기로 상단·하단 배치. 제목 텍스트 박스로 추가.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 인쇄 -->
+      <div class="gpanel" id="gp-print">
+        <div class="gsteps">
+          <div class="gstep">
+            <div class="gstep-num warn-num">!</div>
+            <div class="gstep-body">
+              <div class="gstep-title">상단 여백 6cm 설정 — 모든 출력물 공통</div>
+              <div class="gstep-desc gwarn">⚠️ 모든 출력물(SP·DB·PT) 상단 여백을 반드시 약 6cm(60mm)로 맞춰야 합니다. 이 공간에 자필로 비번호/수험번호/성명을 기재합니다.</div>
+              <div class="gstep-desc">페이지 레이아웃 탭 → 여백 → 사용자 지정 여백 → 위쪽: 6cm</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">1</div>
+            <div class="gstep-body">
+              <div class="gstep-title">인쇄 방향: 세로(좁게)</div>
+              <div class="gstep-desc">페이지 레이아웃 → 용지 방향 → 세로. A4 기준.</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">2</div>
+            <div class="gstep-body">
+              <div class="gstep-title">인쇄 미리보기로 반드시 확인</div>
+              <div class="gstep-desc">Ctrl+P → 미리보기에서 확인사항:<br>• 작업표 + 그래프가 1장에 다 들어오는지<br>• 셀 내용이 잘리지 않는지 (열 너비 조정)<br>• ₩ 기호와 숫자가 제대로 표시되는지<br>• 피벗테이블이 판독 가능한지</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">3</div>
+            <div class="gstep-body">
+              <div class="gstep-title">출력 순서 & 자필 기재</div>
+              <div class="gstep-desc">출력 후 각 장 <strong>중앙 상단(6cm 여백 안)</strong>에 자필로:<br><code>비번호 / 수험번호 / 성명</code><br>각 장 <strong>중앙 하단</strong>에 자필로 쪽번호<br><br>편철 순서: ①답안표지 → ②SP작업표+그래프 → ③SP피벗 → ④DB조회화면 → ⑤DB보고서 → ⑥PT슬라이드</div>
+            </div>
+          </div>
+          <div class="gstep">
+            <div class="gstep-num">4</div>
+            <div class="gstep-body">
+              <div class="gstep-title">출력은 1회 원칙</div>
+              <div class="gstep-desc gwarn">출력 작업은 단 1회. 화면과 출력물이 다를 경우에만 1회 추가 가능. 기계 결함 시 예외.</div>
+              <div class="gstep-desc">출력 전 파일 저장 필수 (Ctrl+S). 파일 내용과 출력물이 다르면 즉시 실격.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 실격 -->
+      <div class="gpanel" id="gp-danger">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="danger-card">
+            <div class="danger-tag">SP 실격</div>
+            <div class="danger-item">작업표에서 수식을 하나도 작성하지 않은 경우</div>
+            <div class="danger-item">그래프 데이터 범위를 잘못 설정한 경우 (여성만 선택 안 함)</div>
+            <div class="danger-item">작업표·그래프·피벗테이블 중 하나라도 득점 0점</div>
+          </div>
+          <div class="danger-card">
+            <div class="danger-tag">DB 실격</div>
+            <div class="danger-item">조회화면에 SQL문이 공란인 경우</div>
+            <div class="danger-item">SQL에 INNER JOIN 또는 ORDER BY 누락</div>
+            <div class="danger-item">보고서 중간합계·총평균 동시 오류로 0점</div>
+          </div>
+          <div class="danger-card">
+            <div class="danger-tag">PT 실격</div>
+            <div class="danger-item">1슬라이드 또는 2슬라이드 득점 0점</div>
+            <div class="danger-item">그라데이션 효과 사용 (사용 금지)</div>
+            <div class="danger-item">도형 채우기를 회색 40%로 하지 않은 경우</div>
+          </div>
+          <div class="danger-card">
+            <div class="danger-tag">공통 실격</div>
+            <div class="danger-item">최종 출력물 5매 미만</div>
+            <div class="danger-item">제출 파일 내용과 출력물 내용 불일치</div>
+            <div class="danger-item">수험 도중 포기 의사 표시</div>
+            <div class="danger-item">세부작업(작업표·그래프·피벗·조회화면·보고서·슬라이드1·2) 중 하나라도 누락</div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;padding:.9rem 1.1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.78rem;color:#991b1b;line-height:1.8">
+          <strong>가장 흔한 실수 TOP 3</strong><br>
+          1. 그래프 범위를 전체 선택 → 여성 행만 선택해야 함<br>
+          2. 함수식 기재(⑦⑨⑪)를 정렬 전에 작성 → 반드시 정렬 후 작성<br>
+          3. 상단 여백 6cm 미설정 → 인쇄 전 반드시 페이지 설정에서 확인
+        </div>
+      </div>
+
+    </div><!-- end guide -->
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="screen" id="s-intro">
+  <div class="intro">
+    <div class="exam-badge" id="introBadge">세트 1</div>
+    <h1 id="introTitle">SP 표계산<br><span>실전 시험 모드</span></h1>
+    <p id="introDesc"></p>
+    <div class="info-cards">
+      <div class="info-card"><div class="num">40<span style="font-size:1rem">분</span></div><div class="lbl">제한 시간</div></div>
+      <div class="info-card"><div class="num">9</div><div class="lbl">총 문항</div></div>
+      <div class="info-card"><div class="num">100</div><div class="lbl">총 배점</div></div>
+    </div>
+    <div class="q-list">
+      <div class="q-item"><span class="q-num">Q1</span><div class="q-desc"><strong>성별·분류 변환</strong> — IF 함수 <span class="tag">IF</span></div></div>
+      <div class="q-item"><span class="q-num">Q2</span><div class="q-desc"><strong>금액 계산</strong> — 항목별 단가 IF 중첩 <span class="tag">IF 중첩</span></div></div>
+      <div class="q-item"><span class="q-num">Q3</span><div class="q-desc"><strong>할인금액·계산금액</strong> — 두 수식 입력 <span class="tag">사칙연산</span></div></div>
+      <div class="q-item"><span class="q-num">Q4</span><div class="q-desc"><strong>평균</strong> — AVERAGE+ROUND <span class="tag">AVERAGE</span></div></div>
+      <div class="q-item"><span class="q-num">Q5</span><div class="q-desc"><strong>표 빈칸 채우기</strong> — 3행 직접 계산 <span class="tag">계산</span></div></div>
+      <div class="q-item"><span class="q-num">Q6</span><div class="q-desc"><strong>SUMIF</strong> — 조건부 합계 <span class="tag">SUMIF 필수</span></div></div>
+      <div class="q-item"><span class="q-num">Q7</span><div class="q-desc"><strong>COUNTIF</strong> — 문자 포함 인원 <span class="tag">COUNTIF 필수</span></div></div>
+      <div class="q-item"><span class="q-num">Q8</span><div class="q-desc"><strong>SUMIFS</strong> — 범위 조건 합계 <span class="tag">SUMIFS 필수</span></div></div>
+      <div class="q-item"><span class="q-num">Q9</span><div class="q-desc"><strong>정렬</strong> — 드래그로 순서 배치 <span class="tag">SORT</span></div></div>
+    </div>
+    <button class="start-btn" onclick="startExam()">⏱ 시험 시작하기</button>
+    <div class="back-btn" onclick="goSetSelect()">← 세트 목록으로</div>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div class="screen" id="s-exam">
+  <div class="exam-header">
+    <div class="exam-bar">
+      <div class="exam-title">
+        SP 실기
+        <span class="set-badge" onclick="goSetSelect()" id="setLabel">세트 1</span>
+      </div>
+      <div class="exam-meta">
+        <div class="progress-pill"><div class="prog-dots" id="progDots"></div><span id="progText">0/9</span></div>
+        <div class="score-pill" id="liveScore">0 / 100점</div>
+        <div class="timer-display" id="timerEl">40:00</div>
+      </div>
+    </div>
+  </div>
+  <div class="exam-layout">
+    <div class="sidebar">
+      <div class="sidebar-title">문항 목록</div>
+      <div id="qNav"></div>
+      <div class="data-ref" id="sideRef"></div>
+    </div>
+    <div class="q-content" id="qContent"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="s-result">
+  <div class="result-screen">
+    <div class="final-grade" id="finalGrade">-</div>
+    <div class="final-label" id="finalLabel"></div>
+    <div class="score-breakdown" id="scoreBreakdown"></div>
+    <button class="retry-btn" onclick="retryExam()">🔄 이 세트 다시 풀기</button>
+    <button class="retry-btn outline" onclick="goSetSelect()">← 세트 목록으로</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  6개 세트 데이터
+// ════════════════════════════════════════
+const SETS = [
+  // ── SET 1: A마트 상품 (원본 예시문제) ──
+  {
+    id:1,
+    label:'세트 1 — 원본 예시',
+    title:'A마트 상품 매출 분석',
+    desc:'예시문제 원본 데이터. <strong>IF·SUMIF·COUNTIF·SUMIFS</strong> 기본 패턴으로 구성됩니다.',
+    colLabel:'상품명',
+    colGender:'성별코드',
+    colQty:'주문수량',
+    colDisc:'할인율',
+    colAmt:'주문금액',
+    genderMap:{1:'남성',2:'여성'},
+    genderF:'여성', genderM:'남성',
+    prices:{라면:5500,과자:6500,음료수:7700},
+    priceLabel:'라면 5,500 / 과자 6,500 / 음료수 7,700',
+    rows:[
+      {item:'라면',who:'곽해남',g:1,qty:15,disc:.05},
+      {item:'과자',who:'김영주',g:2,qty:11,disc:.02},
+      {item:'음료수',who:'김준희',g:2,qty:23,disc:.10},
+      {item:'과자',who:'김희숙',g:2,qty:33,disc:.05},
+      {item:'과자',who:'박수진',g:1,qty:40,disc:.10},
+      {item:'라면',who:'이남호',g:1,qty:20,disc:.07},
+      {item:'음료수',who:'이수영',g:2,qty:24,disc:.10},
+      {item:'라면',who:'이지성',g:1,qty:16,disc:.02},
+      {item:'음료수',who:'조영숙',g:2,qty:55,disc:.10},
+      {item:'과자',who:'표진영',g:1,qty:12,disc:.07},
+      {item:'라면',who:'하석주',g:1,qty:28,disc:.05},
+      {item:'음료수',who:'황현철',g:1,qty:38,disc:.05},
+    ],
+    q6:{col:'F',label:'주문수량',cond:'<20',condLabel:'20개 미만',sumCol:'I',sumLabel:'주문금액'},
+    q7:{col:'C',label:'성명',char:'영',unit:'명'},
+    q8:{condCol:'J',condLabel:'할인금액',low:10000,high:20000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'여성 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'if', q2:'if', q4:'average', q7:'countif'},  // 세트1: 기본 패턴
+  },
+  // ── SET 2: B서점 도서 판매 ──
+  {
+    id:2,
+    label:'세트 2 — B서점',
+    title:'B서점 도서 판매 현황',
+    desc:'소설·경제·자기계발 도서 12건의 판매 데이터. <strong>CHOOSE·VLOOKUP·RANK·COUNTIFS</strong> 함수가 출제됩니다.',
+    colLabel:'도서분류',
+    colGender:'회원코드',
+    colQty:'구매수량',
+    colDisc:'할인율',
+    colAmt:'판매금액',
+    genderMap:{1:'일반',2:'VIP'},
+    genderF:'VIP', genderM:'일반',
+    prices:{소설:12000,경제:18000,자기계발:15000},
+    priceLabel:'소설 12,000 / 경제 18,000 / 자기계발 15,000',
+    rows:[
+      {item:'소설',who:'강민준',g:1,qty:3,disc:.05},
+      {item:'경제',who:'권수현',g:2,qty:2,disc:.10},
+      {item:'자기계발',who:'김도연',g:2,qty:4,disc:.15},
+      {item:'소설',who:'김영서',g:2,qty:5,disc:.10},
+      {item:'경제',who:'박지훈',g:1,qty:1,disc:.03},
+      {item:'자기계발',who:'서민영',g:2,qty:3,disc:.10},
+      {item:'소설',who:'오준석',g:1,qty:6,disc:.05},
+      {item:'이영민',who:'이영민',g:1,qty:2,disc:.03},
+      {item:'경제',who:'이영민',g:1,qty:2,disc:.03},
+      {item:'자기계발',who:'정수영',g:2,qty:7,disc:.15},
+      {item:'소설',who:'최민혁',g:1,qty:4,disc:.05},
+      {item:'경제',who:'한지영',g:2,qty:3,disc:.10},
+      {item:'자기계발',who:'황영준',g:1,qty:5,disc:.05},
+    ],
+    q6:{col:'F',label:'구매수량',cond:'<4',condLabel:'4권 미만',sumCol:'I',sumLabel:'판매금액'},
+    q7:{col:'C',label:'성명',char:'영',unit:'명'},
+    q8:{condCol:'J',condLabel:'할인금액',low:15000,high:40000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'VIP 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'choose', q2:'vlookup', q4:'rank', q7:'countifs'},  // 세트2: CHOOSE·VLOOKUP·RANK·COUNTIFS
+  },
+  // ── SET 3: C병원 진료비 ──
+  {
+    id:3,
+    label:'세트 3 — C병원',
+    title:'C병원 외래 진료비 현황',
+    desc:'내과·외과·피부과 외래 환자 12명 데이터. <strong>IFS·AVERAGEIF</strong> 함수가 출제됩니다.',
+    colLabel:'진료과',
+    colGender:'성별코드',
+    colQty:'진료횟수',
+    colDisc:'보험할인율',
+    colAmt:'진료비',
+    genderMap:{1:'남성',2:'여성'},
+    genderF:'여성', genderM:'남성',
+    prices:{내과:8000,외과:15000,피부과:12000},
+    priceLabel:'내과 8,000 / 외과 15,000 / 피부과 12,000',
+    rows:[
+      {item:'내과',who:'강영호',g:1,qty:3,disc:.10},
+      {item:'외과',who:'김민서',g:2,qty:2,disc:.20},
+      {item:'피부과',who:'김수진',g:2,qty:5,disc:.15},
+      {item:'내과',who:'나영미',g:2,qty:4,disc:.10},
+      {item:'외과',who:'박성준',g:1,qty:1,disc:.05},
+      {item:'피부과',who:'서지영',g:2,qty:6,disc:.20},
+      {item:'내과',who:'오민수',g:1,qty:8,disc:.10},
+      {item:'외과',who:'이영란',g:2,qty:3,disc:.20},
+      {item:'피부과',who:'이준호',g:1,qty:2,disc:.10},
+      {item:'내과',who:'정영숙',g:2,qty:7,disc:.15},
+      {item:'외과',who:'최민준',g:1,qty:4,disc:.05},
+      {item:'피부과',who:'홍수영',g:1,qty:5,disc:.15},
+    ],
+    q6:{col:'F',label:'진료횟수',cond:'<4',condLabel:'4회 미만',sumCol:'I',sumLabel:'진료비'},
+    q7:{col:'C',label:'성명',char:'영',unit:'명'},
+    q8:{condCol:'J',condLabel:'할인금액',low:20000,high:60000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'여성 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'ifs', q2:'if', q4:'averageif', q7:'countif'},  // 세트3: IFS·AVERAGEIF
+  },
+  // ── SET 4: D학원 수강료 ──
+  {
+    id:4,
+    label:'세트 4 — D학원',
+    title:'D학원 수강 현황 분석',
+    desc:'영어·수학·과학 강좌 12명 데이터. <strong>VLOOKUP·MAX·COUNTIFS</strong> 함수가 출제됩니다.',
+    colLabel:'강좌명',
+    colGender:'등급코드',
+    colQty:'수강개월',
+    colDisc:'할인율',
+    colAmt:'수강료',
+    genderMap:{1:'일반',2:'우수'},
+    genderF:'우수', genderM:'일반',
+    prices:{영어:80000,수학:70000,과학:75000},
+    priceLabel:'영어 80,000 / 수학 70,000 / 과학 75,000',
+    rows:[
+      {item:'영어',who:'강현우',g:1,qty:3,disc:.05},
+      {item:'수학',who:'김도영',g:2,qty:6,disc:.10},
+      {item:'과학',who:'김수빈',g:2,qty:4,disc:.10},
+      {item:'영어',who:'나민수',g:1,qty:2,disc:.03},
+      {item:'수학',who:'박영진',g:2,qty:8,disc:.15},
+      {item:'과학',who:'서영란',g:1,qty:5,disc:.05},
+      {item:'영어',who:'오준수',g:2,qty:7,disc:.10},
+      {item:'수학',who:'이영호',g:1,qty:3,disc:.03},
+      {item:'과학',who:'정민영',g:2,qty:6,disc:.10},
+      {item:'영어',who:'최영재',g:1,qty:4,disc:.05},
+      {item:'수학',who:'한민준',g:2,qty:9,disc:.15},
+      {item:'과학',who:'홍수영',g:1,qty:2,disc:.03},
+    ],
+    q6:{col:'F',label:'수강개월',cond:'<5',condLabel:'5개월 미만',sumCol:'I',sumLabel:'수강료'},
+    q7:{col:'C',label:'성명',char:'영',unit:'명'},
+    q8:{condCol:'J',condLabel:'할인금액',low:30000,high:80000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'우수 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'if', q2:'vlookup', q4:'max', q7:'countifs'},  // 세트4: VLOOKUP·MAX·COUNTIFS
+  },
+  // ── SET 5: E마트 식품 ──
+  {
+    id:5,
+    label:'세트 5 — E마트',
+    title:'E마트 식품 주문 현황',
+    desc:'육류·채소·유제품 12건 주문 데이터. <strong>CHOOSE·RANK</strong> 함수가 출제됩니다.',
+    colLabel:'상품군',
+    colGender:'회원코드',
+    colQty:'주문수량',
+    colDisc:'할인율',
+    colAmt:'주문금액',
+    genderMap:{1:'일반',2:'프리미엄'},
+    genderF:'프리미엄', genderM:'일반',
+    prices:{육류:9500,채소:3200,유제품:6800},
+    priceLabel:'육류 9,500 / 채소 3,200 / 유제품 6,800',
+    rows:[
+      {item:'육류',who:'강영수',g:2,qty:5,disc:.10},
+      {item:'채소',who:'김수민',g:1,qty:20,disc:.05},
+      {item:'유제품',who:'김영진',g:2,qty:8,disc:.10},
+      {item:'육류',who:'나민영',g:1,qty:3,disc:.03},
+      {item:'채소',who:'박수현',g:2,qty:30,disc:.15},
+      {item:'유제품',who:'서민수',g:1,qty:6,disc:.05},
+      {item:'육류',who:'오영준',g:2,qty:10,disc:.10},
+      {item:'채소',who:'이수영',g:1,qty:15,disc:.05},
+      {item:'유제품',who:'이영미',g:2,qty:12,disc:.15},
+      {item:'육류',who:'정민수',g:1,qty:4,disc:.03},
+      {item:'채소',who:'최영란',g:2,qty:25,disc:.10},
+      {item:'유제품',who:'홍수민',g:1,qty:7,disc:.05},
+    ],
+    q6:{col:'F',label:'주문수량',cond:'<8',condLabel:'8개 미만',sumCol:'I',sumLabel:'주문금액'},
+    q7:{col:'C',label:'성명',char:'영',unit:'명'},
+    q8:{condCol:'J',condLabel:'할인금액',low:5000,high:20000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'프리미엄 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'choose', q2:'if', q4:'rank', q7:'countif'},  // 세트5: CHOOSE·RANK
+  },
+  // ── SET 6: F물류 배송료 ──
+  {
+    id:6,
+    label:'세트 6 — F물류',
+    title:'F물류 배송비 현황 분석',
+    desc:'일반·특급·냉동 배송 12건 데이터. <strong>IFS·VLOOKUP·AVERAGEIF·COUNTIFS</strong> 함수가 출제됩니다.',
+    colLabel:'배송유형',
+    colGender:'등급코드',
+    colQty:'배송건수',
+    colDisc:'할인율',
+    colAmt:'배송료',
+    genderMap:{1:'기본',2:'우대'},
+    genderF:'우대', genderM:'기본',
+    prices:{일반:3500,특급:7000,냉동:9000},
+    priceLabel:'일반 3,500 / 특급 7,000 / 냉동 9,000',
+    rows:[
+      {item:'일반',who:'강수영',g:2,qty:8,disc:.10},
+      {item:'특급',who:'김민준',g:1,qty:3,disc:.05},
+      {item:'냉동',who:'김영수',g:2,qty:5,disc:.15},
+      {item:'일반',who:'나수민',g:1,qty:12,disc:.03},
+      {item:'특급',who:'박민영',g:2,qty:6,disc:.10},
+      {item:'냉동',who:'서영호',g:1,qty:2,disc:.05},
+      {item:'일반',who:'오수진',g:2,qty:10,disc:.10},
+      {item:'특급',who:'이민수',g:1,qty:4,disc:.05},
+      {item:'냉동',who:'이영란',g:2,qty:7,disc:.15},
+      {item:'일반',who:'정수현',g:1,qty:15,disc:.03},
+      {item:'특급',who:'최민영',g:2,qty:9,disc:.10},
+      {item:'냉동',who:'홍영준',g:1,qty:3,disc:.05},
+    ],
+    q6:{col:'F',label:'배송건수',cond:'<5',condLabel:'5건 미만',sumCol:'I',sumLabel:'배송료'},
+    q7:{col:'C',label:'성명',char:'영',unit:'건'},
+    q8:{condCol:'J',condLabel:'할인금액',low:3000,high:10000,sumCol:'K',sumLabel:'계산금액'},
+    sortPrimary:'우대 먼저',
+    sortSecondary:'계산금액 내림차순',
+    fn:{q1:'ifs', q2:'vlookup', q4:'averageif', q7:'countifs'},  // 세트6: IFS·VLOOKUP·AVERAGEIF·COUNTIFS
+  },
+];
+
+// ── 세트 2 rows 데이터 수정 (중복 오류 수정) ──
+SETS[1].rows = [
+  {item:'소설',who:'강민준',g:1,qty:3,disc:.05},
+  {item:'경제',who:'권수현',g:2,qty:2,disc:.10},
+  {item:'자기계발',who:'김도연',g:2,qty:4,disc:.15},
+  {item:'소설',who:'김영서',g:2,qty:5,disc:.10},
+  {item:'경제',who:'박지훈',g:1,qty:1,disc:.03},
+  {item:'자기계발',who:'서민영',g:2,qty:3,disc:.10},
+  {item:'소설',who:'오준석',g:1,qty:6,disc:.05},
+  {item:'경제',who:'이영민',g:1,qty:2,disc:.03},
+  {item:'자기계발',who:'정수영',g:2,qty:7,disc:.15},
+  {item:'소설',who:'최민혁',g:1,qty:4,disc:.05},
+  {item:'경제',who:'한지영',g:2,qty:3,disc:.10},
+  {item:'자기계발',who:'황영준',g:1,qty:5,disc:.05},
+];
+
+// ═══════════ 계산 함수 ═══════════
+const orderAmt = (s,r) => r.qty * s.prices[r.item];
+const discAmt  = (s,r) => Math.round(orderAmt(s,r) * r.disc);
+const calcAmt  = (s,r) => orderAmt(s,r) - discAmt(s,r);
+const gLabel   = (s,r) => s.genderMap[r.g];
+const fmt = n => n.toLocaleString('ko-KR');
+
+function makeSorted(s){
+  return [...s.rows].map(r=>({
+    ...r,
+    glabel:gLabel(s,r),
+    oa:orderAmt(s,r),
+    da:discAmt(s,r),
+    ca:calcAmt(s,r)
+  })).sort((a,b)=>{
+    const fA = a.glabel===s.genderF, fB = b.glabel===s.genderF;
+    if(fA!==fB) return fA?-1:1;
+    return b.ca-a.ca;
+  });
+}
+
+// ═══════════ 문제 생성 — 세트별 함수 변형 지원 ═══════════
+function makeQuestions(s){
+  // 세트 7~9는 전용 함수로 분기 (VARIANT_SETS 참조 시 재귀 버그 방지)
+  if(s.id===7) return makeQuestions7();
+  if(s.id===8) return makeQuestions8();
+  if(s.id===9) return makeQuestions9();
+  const sorted=makeSorted(s);
+  const rows=s.rows;
+  const keys=Object.keys(s.prices);
+  const fn=s.fn||{};
+
+  // ── Q1: 코드→텍스트 변환 ──
+  const q1variants={
+    if:{
+      title:`${s.colGender} → 텍스트 변환 (IF)`,category:`① ${s.colGender}`,
+      conditions:['IF 함수 사용 필수'],
+      placeholder:`=IF(D5=1,"${s.genderMap[1]}",`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('IF')&&!n.startsWith('IFS')&&n.includes('D5')&&n.includes('=1')&&n.includes(`"${s.genderMap[1].toUpperCase()}"`)},
+      answer:`=IF(D5=1,"${s.genderMap[1]}","${s.genderMap[2]}")`,
+      hint:`IF(D5=1,"${s.genderMap[1]}","${s.genderMap[2]}")`,
+      explain:`IF(D5=1,"${s.genderMap[1]}","${s.genderMap[2]}") — 코드 1이면 ${s.genderMap[1]}, 아니면 ${s.genderMap[2]}`,
+    },
+    choose:{
+      title:`${s.colGender} → 텍스트 변환 (CHOOSE)`,category:`① ${s.colGender}`,
+      conditions:['CHOOSE 함수 사용 필수','IF 사용 시 오답'],
+      placeholder:`=CHOOSE(D5,"${s.genderMap[1]}",`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('CHOOSE')&&n.includes('D5')&&n.includes(`"${s.genderMap[1].toUpperCase()}"`);},
+      answer:`=CHOOSE(D5,"${s.genderMap[1]}","${s.genderMap[2]}")`,
+      hint:`CHOOSE(인덱스, 값1, 값2) — D5가 1이면 첫 번째, 2이면 두 번째 값`,
+      explain:`CHOOSE(D5,"${s.genderMap[1]}","${s.genderMap[2]}") — D5 값을 인덱스로 순서대로 반환`,
+    },
+    ifs:{
+      title:`${s.colGender} → 텍스트 변환 (IFS)`,category:`① ${s.colGender}`,
+      conditions:['IFS 함수 사용 필수','IF 사용 시 오답'],
+      placeholder:`=IFS(D5=1,"${s.genderMap[1]}",`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.startsWith('=IFS')&&n.includes('D5=1')&&n.includes(`"${s.genderMap[1].toUpperCase()}"`)&&n.includes(`"${s.genderMap[2].toUpperCase()}"`)},
+      answer:`=IFS(D5=1,"${s.genderMap[1]}",D5=2,"${s.genderMap[2]}")`,
+      hint:`IFS(조건1, 값1, 조건2, 값2) — 첫 번째로 참인 조건의 값 반환`,
+      explain:`IFS(D5=1,"${s.genderMap[1]}",D5=2,"${s.genderMap[2]}") — IF 중첩보다 가독성이 좋습니다`,
+    },
+  };
+
+  // ── Q2: 금액 계산 ──
+  const q2variants={
+    if:{
+      title:`${s.colAmt} 수식 (IF 중첩)`,category:`② ${s.colAmt}`,
+      conditions:['IF 중첩 사용','B5로 분기','F5 수량 사용'],
+      placeholder:`=IF(B5="${keys[0]}",F5*`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('IF')&&n.includes('B5')&&n.includes('F5')&&Object.values(s.prices).every(p=>n.includes(String(p)));},
+      answer:`=IF(B5="${keys[0]}",F5*${s.prices[keys[0]]},IF(B5="${keys[1]}",F5*${s.prices[keys[1]]},F5*${s.prices[keys[2]]}))`,
+      hint:`B5가 "${keys[0]}"이면 F5*${s.prices[keys[0]]}, "${keys[1]}"이면 F5*${s.prices[keys[1]]}, 나머지 F5*${s.prices[keys[2]]}`,
+      explain:`${s.colLabel}별로 단가를 IF 중첩으로 분기합니다.`,
+    },
+    vlookup:{
+      title:`${s.colAmt} 수식 (VLOOKUP)`,category:`② ${s.colAmt}`,
+      conditions:['VLOOKUP 함수 사용 필수','B5가 찾을 값','단가 테이블 범위 절대참조($)','IF 사용 시 오답'],
+      placeholder:'=VLOOKUP(B5,$N$',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('VLOOKUP')&&n.includes('B5')&&n.includes('F5');},
+      answer:`=VLOOKUP(B5,$N$4:$O$6,2,0)*F5`,
+      hint:`VLOOKUP(B5,$N$4:$O$6,2,0)*F5 — B5 항목명으로 단가표를 찾아 F5 수량을 곱함`,
+      explain:`VLOOKUP으로 단가표에서 단가를 찾아 수량(F5)을 곱합니다. 단가표는 별도 열(N:O)에 작성합니다.`,
+    },
+  };
+
+  // ── Q4: 통계 함수 ──
+  const q4variants={
+    average:{
+      title:'평균 (AVERAGE)',category:'⑤ 평균',pts:8,cell:'I17',
+      context:`5~16행 <strong>${s.colAmt}(I열) 평균</strong>을 반올림하여 구하세요.`,
+      conditions:['AVERAGE 함수 사용','ROUND로 반올림'],
+      placeholder:'=ROUND(AVERAGE(I5:I16)',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('AVERAGE')&&n.includes('I5:I16');},
+      answer:'=ROUND(AVERAGE(I5:I16),0)',hint:'ROUND(AVERAGE(I5:I16),0)',explain:'AVERAGE로 평균 후 ROUND로 정수 처리합니다.',
+    },
+    rank:{
+      title:'계산금액 순위 (RANK)',category:'⑤ 순위',pts:8,cell:'L5',
+      context:`계산금액(K열) 기준 <strong>내림차순 순위</strong>를 구하세요.<br>K5:K16 절대참조 사용.`,
+      conditions:['RANK 함수 사용 필수','$K$5:$K$16 절대참조','0=내림차순'],
+      placeholder:'=RANK(K5,$K$5:$K$16',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('RANK')&&n.includes('K5')&&(n.includes('$K$5:$K$16')||n.includes('K5:K16'));},
+      answer:'=RANK(K5,$K$5:$K$16,0)',hint:'RANK(값, 범위, 0) — 0은 내림차순',explain:'RANK(K5,$K$5:$K$16,0) — 절대참조로 범위를 고정해야 아래 행 복사 시 틀리지 않습니다.',
+    },
+    max:{
+      title:'최대·최소 (MAX/MIN)',category:'⑤ 최대값',pts:8,cell:'I17',
+      context:`계산금액(K열)의 <strong>최댓값</strong>을 I17에, <strong>최솟값</strong>을 I18에 구하세요.<br>두 수식을 쉼표(,)로 구분해서 입력하세요.`,
+      conditions:['MAX 함수','MIN 함수','K5:K16 범위'],
+      placeholder:'=MAX(K5:K16), =MIN(',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('MAX')&&n.includes('MIN')&&n.includes('K5:K16');},
+      answer:'=MAX(K5:K16), =MIN(K5:K16)',hint:'MAX(K5:K16) / MIN(K5:K16)',explain:'MAX는 최댓값, MIN은 최솟값을 반환합니다.',
+    },
+    averageif:{
+      title:'조건부 평균 (AVERAGEIF)',category:'⑤ 조건 평균',pts:8,cell:'I17',
+      context:`<strong>${s.genderF}(H열)</strong>인 고객의 <strong>계산금액(K열) 평균</strong>을 반올림하여 구하세요.`,
+      conditions:['AVERAGEIF 함수 사용 필수','H5:H16 조건 범위','K5:K16 평균 범위'],
+      placeholder:`=ROUND(AVERAGEIF(H5:H16,"${s.genderF}",`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('AVERAGEIF')&&n.includes('H5:H16')&&n.includes(`"${s.genderF.toUpperCase()}"`)&&n.includes('K5:K16');},
+      answer:`=ROUND(AVERAGEIF(H5:H16,"${s.genderF}",K5:K16),0)`,
+      hint:`AVERAGEIF(H5:H16,"${s.genderF}",K5:K16) — H열이 ${s.genderF}인 행의 K열 평균`,
+      explain:`AVERAGEIF(조건범위, 조건, 평균범위) — ${s.genderF}만 골라 평균을 구합니다.`,
+    },
+  };
+
+  // ── Q7: 카운트 변형 ──
+  const q7variants={
+    countif:{
+      title:`"${s.q7.char}" 포함 인원 (COUNTIF)`,category:'⑦ COUNTIF',pts:10,cell:'K20',
+      context:`성명(C열)에 <strong>"${s.q7.char}"이 포함된</strong> 사람 수를 구하고 <strong>"${s.q7.unit}"</strong>을 함께 출력하세요.`,
+      conditions:['COUNTIF 함수 필수',`*${s.q7.char}* 와일드카드`,`&"${s.q7.unit}" 연결`],
+      placeholder:`=COUNTIF(C5:C16,"*${s.q7.char}*")`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('COUNTIF')&&!n.startsWith('=COUNTIFS')&&n.includes('C5:C16')&&n.includes(`"*${s.q7.char.toUpperCase()}*"`)&&(n.includes(`&"${s.q7.unit}"`));},
+      answer:`=COUNTIF(C5:C16,"*${s.q7.char}*")&"${s.q7.unit}"`,
+      hint:`COUNTIF(C5:C16,"*${s.q7.char}*")&"${s.q7.unit}"`,
+      explain:`*${s.q7.char}* 와일드카드로 포함 검색 후 &"${s.q7.unit}" 연결`,
+    },
+    countifs:{
+      title:`"${s.q7.char}" 포함 + 조건 (COUNTIFS)`,category:'⑦ COUNTIFS',pts:10,cell:'K20',
+      context:`성명(C열)에 <strong>"${s.q7.char}"이 포함</strong>되면서 <strong>${s.genderF}(H열)</strong>인 사람 수를 구하고 <strong>"${s.q7.unit}"</strong>을 함께 출력하세요.`,
+      conditions:['COUNTIFS 함수 필수 (조건 2개)',`&"${s.q7.unit}" 연결`],
+      placeholder:`=COUNTIFS(C5:C16,"*${s.q7.char}*",H5:H16,`,
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('COUNTIFS')&&n.includes('C5:C16')&&n.includes('H5:H16')&&n.includes(`"${s.genderF.toUpperCase()}"`)&&n.includes(`&"${s.q7.unit}"`);},
+      answer:`=COUNTIFS(C5:C16,"*${s.q7.char}*",H5:H16,"${s.genderF}")&"${s.q7.unit}"`,
+      hint:`COUNTIFS(C5:C16,"*${s.q7.char}*",H5:H16,"${s.genderF}")&"${s.q7.unit}"`,
+      explain:`COUNTIFS로 두 조건(이름 포함 + ${s.genderF})을 동시에 적용합니다.`,
+    },
+  };
+
+  const q1=q1variants[fn.q1||'if'];
+  const q2=q2variants[fn.q2||'if'];
+  const q4=q4variants[fn.q4||'average'];
+  const q7=q7variants[fn.q7||'countif'];
+
+  return [
+    { id:'q1', title:q1.title, category:q1.category, pts:10, cell:'H5',
+      context:`${s.colGender}(D열)에서 <strong>1 → "${s.genderMap[1]}"</strong>, <strong>2 → "${s.genderMap[2]}"</strong>으로 변환하세요.`,
+      conditions:q1.conditions, placeholder:q1.placeholder,
+      check:q1.check, answer:q1.answer, hint:q1.hint, explain:q1.explain, type:'formula' },
+
+    { id:'q2', title:q2.title, category:q2.category, pts:12, cell:'I5',
+      context:`${s.colQty}(F열) × 단가를 계산합니다.<br>단가: ${s.priceLabel}`,
+      conditions:q2.conditions, placeholder:q2.placeholder,
+      check:q2.check, answer:q2.answer, hint:q2.hint, explain:q2.explain, type:'formula' },
+
+    { id:'q3', title:'할인금액 · 계산금액', category:'③④ 할인금액·계산금액', pts:8, cell:'J5 / K5',
+      context:`<strong>할인금액(J5)</strong> = ${s.colAmt}(I5) × ${s.colDisc}(G5)<br><strong>계산금액(K5)</strong> = ${s.colAmt}(I5) − 할인금액(J5)<br>쉼표(,)로 구분해서 두 수식 입력.`,
+      conditions:['J5: I5*G5 (ROUND 권장)','K5: I5-J5'],
+      placeholder:'=ROUND(I5*G5,0), =I5-J5',
+      check(v){const p=v.split(',');if(p.length<2)return false;const j=p[0].replace(/\s/g,'').toUpperCase(),k=p[1].replace(/\s/g,'').toUpperCase();return j.includes('I5')&&j.includes('G5')&&k.includes('I5')&&k.includes('J5')&&k.includes('-');},
+      answer:'=ROUND(I5*G5,0), =I5-J5', hint:'J5: =ROUND(I5*G5,0) / K5: =I5-J5', explain:'할인금액=금액×할인율, 계산금액=금액−할인금액', type:'formula' },
+
+    { id:'q4', ...q4 },
+
+    { id:'q5', title:'표 빈칸 채우기', category:'계산 실습', pts:12,
+      context:'아래 3개 행의 금액·할인금액·계산금액을 직접 계산하여 입력하세요.',
+      conditions:[`단가: ${s.priceLabel}`,'할인금액 = 금액 × 할인율 (반올림)','계산금액 = 금액 − 할인금액'],
+      type:'table',
+      rows:rows.slice(0,3).map(r=>({item:r.item,who:r.who,qty:r.qty,discPct:Math.round(r.disc*100)+'%',oa:orderAmt(s,r),da:discAmt(s,r),ca:calcAmt(s,r)})) },
+
+    { id:'q6', title:`SUMIF — ${s.q6.condLabel} 합계`, category:'⑥ SUMIF', pts:12, cell:'K18',
+      context:`<strong>${s.q6.label}(${s.q6.col}열)이 ${s.q6.condLabel}</strong>인 항목의 <strong>${s.q6.sumLabel}(${s.q6.sumCol}열) 합계</strong>를 구하세요.`,
+      conditions:['SUMIF 또는 SUMIFS 필수','다른 함수 사용 시 0점'],
+      placeholder:'=SUMIF(',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return n.includes('SUMIF')&&n.includes(`${s.q6.col}5:${s.q6.col}16`)&&n.includes(`${s.q6.sumCol}5:${s.q6.sumCol}16`)&&n.includes(s.q6.cond.toUpperCase());},
+      answer:`=SUMIF(${s.q6.col}5:${s.q6.col}16,"${s.q6.cond}",${s.q6.sumCol}5:${s.q6.sumCol}16)`,
+      hint:`SUMIF(${s.q6.col}5:${s.q6.col}16,"${s.q6.cond}",${s.q6.sumCol}5:${s.q6.sumCol}16)`,
+      explain:`${s.q6.col}열 조건(${s.q6.condLabel})을 만족하는 ${s.q6.sumCol}열을 합산합니다.`, type:'formula' },
+
+    { id:'q7', title:q7.title, category:q7.category, pts:10, cell:'K20',
+      context:q7.context, conditions:q7.conditions, placeholder:q7.placeholder,
+      check:q7.check, answer:q7.answer, hint:q7.hint, explain:q7.explain, type:'formula' },
+
+    { id:'q8', title:`SUMIFS — ${s.q8.condLabel} 범위 합산`, category:'⑧ SUMIFS', pts:12, cell:'K22',
+      context:`<strong>${s.q8.condLabel}(${s.q8.condCol}열)이 ${fmt(s.q8.low)} 이상 ${fmt(s.q8.high)} 미만</strong>인 항목의 <strong>${s.q8.sumLabel}(${s.q8.sumCol}열) 합</strong>을 구하세요. 수치는 <code>${s.q8.low}</code>과 <code>${s.q8.high}</code> 사용.`,
+      conditions:['SUMIF 또는 SUMIFS 필수',`${s.q8.low}과 ${s.q8.high} (콤마 없이)`],
+      placeholder:'=SUMIFS(',
+      check(v){const n=v.replace(/\s/g,'').toUpperCase();return (n.includes('SUMIFS')||n.includes('SUMIF'))&&n.includes(`${s.q8.sumCol}5:${s.q8.sumCol}16`)&&n.includes(`${s.q8.condCol}5:${s.q8.condCol}16`)&&n.includes(String(s.q8.low))&&n.includes(String(s.q8.high));},
+      answer:`=SUMIFS(${s.q8.sumCol}5:${s.q8.sumCol}16,${s.q8.condCol}5:${s.q8.condCol}16,">=${s.q8.low}",${s.q8.condCol}5:${s.q8.condCol}16,"<${s.q8.high}")`,
+      hint:`SUMIFS(합산범위, 조건범위, ">=${s.q8.low}", 조건범위, "<${s.q8.high}")`,
+      explain:`${s.q8.condCol}열에 >=${s.q8.low} AND <${s.q8.high} 두 조건을 SUMIFS로 처리합니다.`, type:'formula' },
+
+    { id:'q9', title:'정렬 순서 배치', category:'정렬 (SORT)', pts:16,
+      context:`행들을 올바른 순서로 드래그하세요.<br><strong>1순위</strong>: ${s.colGender} — ${s.sortPrimary}<br><strong>2순위</strong>: ${s.sortSecondary}`,
+      conditions:[`${s.genderF} 먼저, ${s.genderM} 나중`,`같은 등급 내 ${s.sortSecondary}`],
+      type:'sort', sorted:makeSorted(s) }
+  ];
+}
+
+// ═══════════ STATE ═══════════
+let curSet=null, curQ=0, scores={}, attempts={}, timerSec=2400, timerInt=null;
+const bestScores = {};
+
+function totalScore(){ return Object.values(scores).reduce((s,v)=>s+(v.ok?v.pts:0),0); }
+function maxScore(){ return 100; }
+
+// ═══════════ SET SELECT ═══════════
+function buildSetGrid(){
+  const grid=document.getElementById('setGrid');
+  grid.innerHTML='';
+  let globalBest=0;
+  SETS.forEach(s=>{
+    const best=bestScores[s.id];
+    if(best) globalBest=Math.max(globalBest,best);
+    const isVariant=s.type==='variant';
+    const card=document.createElement('div');
+    card.className='set-card'+(best?' done-card':'');
+    card.onclick=()=>goIntro(s);
+    card.innerHTML=`
+      <div class="set-num">${s.id}</div>
+      <div class="set-label">${s.label}${isVariant?` <span style="font-size:.58rem;background:#fef3c7;color:#78350f;border:1px solid #fcd34d;padding:1px 5px;border-radius:3px;vertical-align:middle">다른 함수</span>`:''}</div>
+      <div class="set-title">${s.title}</div>
+      <div class="set-desc">${s.desc}</div>
+      ${best?`<div class="set-score ${best>=80?'ok':'ng'}">최고점: ${best} / 100점${best>=80?' 🏆':''}</div>`:'<div class="set-score" style="color:var(--ink3)">미도전</div>'}
+    `;
+    grid.appendChild(card);
+  });
+  document.getElementById('globalRecord').textContent = globalBest>0?`전체 최고점: ${globalBest}점`:'전체 최고점: —';
+}
+function goSetSelect(){ clearInterval(timerInt); showScreen('setselect'); buildSetGrid(); }
+
+function goIntro(s){
+  curSet=s;
+  document.getElementById('introBadge').textContent=s.label;
+  document.getElementById('introTitle').innerHTML=`${s.title}<br><span>실전 시험 모드</span>`;
+  document.getElementById('introDesc').textContent=s.desc;
+  showScreen('intro');
+}
+
+function startExam(){
+  scores={}; attempts={}; curQ=0; timerSec=2400;
+  document.getElementById('setLabel').textContent=curSet.label;
+  showScreen('exam');
+  buildNav();
+  buildQ(0);
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{ timerSec--; updateTimerUI(); if(timerSec<=0){clearInterval(timerInt);endExam();} },1000);
+}
+function retryExam(){ clearInterval(timerInt); startExam(); }
+
+// ═══════════ TIMER ═══════════
+function updateTimerUI(){
+  const m=Math.floor(timerSec/60),s=timerSec%60;
+  const el=document.getElementById('timerEl');
+  el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  el.className='timer-display';
+  if(timerSec<=300)el.className='timer-display danger';
+  else if(timerSec<=600)el.className='timer-display warn';
+}
+
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById('s-'+id).classList.add('on'); }
+
+// ═══════════ NAV ═══════════
+function buildNav(){
+  const qs=makeQuestions(curSet);
+  const nav=document.getElementById('qNav');
+  const dots=document.getElementById('progDots');
+  nav.innerHTML=''; dots.innerHTML='';
+  qs.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='q-nav-item'+(i===0?' active':'');
+    d.id='nav-'+i; d.onclick=()=>buildQ(i);
+    d.innerHTML=`<div class="q-nav-num">${i+1}</div><div class="q-nav-text">${q.category}</div>`;
+    nav.appendChild(d);
+    const dot=document.createElement('div');
+    dot.className='prog-dot'+(i===0?' active':'');
+    dot.id='dot-'+i;
+    dots.appendChild(dot);
+  });
+  // sidebar ref
+  const keys=Object.keys(curSet.prices);
+  document.getElementById('sideRef').innerHTML=`
+    <div class="data-ref-title">📌 단가 참조표</div>
+    <table class="mini-table"><thead><tr><th>${curSet.colLabel}</th><th>단가</th></tr></thead><tbody>
+    ${keys.map(k=>`<tr><td>${k}</td><td>${fmt(curSet.prices[k])}</td></tr>`).join('')}
+    </tbody></table>
+    <div style="margin-top:.8rem"><div class="data-ref-title">${curSet.colGender}</div>
+    <div style="font-size:.7rem;color:var(--ink2);line-height:2">1 → <strong>${curSet.genderMap[1]}</strong><br>2 → <strong>${curSet.genderMap[2]}</strong></div></div>`;
+}
+function updateNav(){
+  const qs=makeQuestions(curSet);
+  qs.forEach((q,i)=>{
+    const navEl=document.getElementById('nav-'+i);
+    const dotEl=document.getElementById('dot-'+i);
+    if(!navEl)return;
+    navEl.className='q-nav-item'+(i===curQ?' active':'');
+    dotEl.className='prog-dot'+(i===curQ?' active':'');
+    if(scores[q.id]){
+      navEl.classList.add(scores[q.id].ok?'scored-ok':'scored-ng');
+      dotEl.classList.add(scores[q.id].ok?'done':'wrong-dot');
+    }
+  });
+  document.getElementById('progText').textContent=(curQ+1)+'/9';
+  document.getElementById('liveScore').textContent=totalScore()+' / '+maxScore()+'점';
+}
+
+// ═══════════ BUILD QUESTION ═══════════
+let sortOrder=[], dragSrc=null;
+
+function buildQ(i){
+  curQ=i; updateNav();
+  const qs=makeQuestions(curSet);
+  const q=qs[i];
+  const c=document.getElementById('qContent');
+  const alreadyScored=!!scores[q.id];
+  let html=`<div class="q-header"><div class="q-header-left"><div class="q-category">Q${i+1} · ${q.category}</div><div class="q-title">${q.title}</div></div><div class="q-points">${q.pts}<span>점</span></div></div>`;
+  if(q.cell) html+=`<div style="margin-bottom:.8rem"><span class="condition-tag cond-info">셀 위치: ${q.cell}</span></div>`;
+  html+=`<div class="context-box">${q.context}</div>`;
+  html+=`<div style="margin-bottom:1rem">${q.conditions.map(cond=>`<span class="condition-tag cond-must">${cond}</span>`).join(' ')}</div>`;
+
+  if(q.type==='formula'){
+    const prev=(attempts[q.id]||{}).val||'';
+    const cls=alreadyScored?(scores[q.id].ok?'ok':'ng'):'';
+    html+=`<div class="formula-area"><div class="formula-label">수식 입력 <span class="cell-ref">${q.cell}</span></div>
+      <input class="formula-input ${cls}" id="finput" type="text" placeholder="${q.placeholder}..." value="${prev}" ${alreadyScored?'readonly':''} oninput="document.getElementById('fresult').className='result-box'"></div>`;
+    if(alreadyScored){
+      const ok=scores[q.id].ok;
+      html+=`<div class="result-box show ${ok?'ok':'ng'}" id="fresult"><div class="result-label">${ok?'✓ 정답':'✗ 오답'}</div>${q.explain}<div class="result-formula">정답: ${q.answer}</div></div>`;
+    } else html+=`<div class="result-box" id="fresult"></div>`;
+    html+=`<div class="btn-group">`;
+    if(!alreadyScored) html+=`<button class="btn submit" onclick="submitFormula(${i})">채점하기</button><button class="btn hint-btn" onclick="showHint(${i})">힌트</button>`;
+    html+=nextBtn(i)+'</div>';
+  }
+  else if(q.type==='table'||q.type==='table7'||q.type==='table8'||q.type==='table9'){
+    const isVariant=q.type!=='table';
+    const tRows = isVariant ? getVariantTableRows(curSet) : q.rows;
+    const colAmt = curSet.colAmt||'금액';
+    html+=`<div class="sp-table-wrap"><table class="sp-table" id="fillTable"><thead><tr><th>항목</th><th>성명</th><th>수량</th><th>할인율</th><th>${colAmt}</th><th>할인금액</th><th>계산금액</th></tr></thead><tbody>`;
+    tRows.forEach((r,ri)=>{
+      const sid=scores[q.id];
+      let oaCls='',daCls='',caCls='';
+      if(sid&&sid.detail){oaCls=sid.detail[ri].oa?'correct':'wrong';daCls=sid.detail[ri].da?'correct':'wrong';caCls=sid.detail[ri].ca?'correct':'wrong';}
+      html+=`<tr><td class="fixed">${r.item}</td><td class="fixed">${r.who}</td><td class="fixed">${r.qty}</td><td class="fixed">${r.discPct}</td>
+        <td class="${oaCls}"><input class="cell-inp" id="oa${ri}" type="text" placeholder="?" value="${(attempts[q.id]||{})['oa'+ri]||''}" ${alreadyScored?'readonly':''}></td>
+        <td class="${daCls}"><input class="cell-inp" id="da${ri}" type="text" placeholder="?" value="${(attempts[q.id]||{})['da'+ri]||''}" ${alreadyScored?'readonly':''}></td>
+        <td class="${caCls}"><input class="cell-inp" id="ca${ri}" type="text" placeholder="?" value="${(attempts[q.id]||{})['ca'+ri]||''}" ${alreadyScored?'readonly':''}></td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+    html+=alreadyScored?`<div class="result-box show ${scores[q.id].ok?'ok':'ng'}" id="fresult"><div class="result-label">${scores[q.id].ok?'✓ 전체 정답':'일부 오답'}</div>${scores[q.id].ok?'모두 정확합니다!':'빨간 칸을 확인하세요.'}</div>`:`<div class="result-box" id="fresult"></div>`;
+    html+=`<div class="btn-group">`;
+    if(!alreadyScored) html+=`<button class="btn submit" onclick="submitTableVariant(${i})">채점하기</button>`;
+    html+=nextBtn(i)+'</div>';
+  }
+  else if(q.type==='sort'||q.type==='sort7'||q.type==='sort8'||q.type==='sort9'){
+    html+=`<div id="sortContainer"></div><div class="result-box" id="fresult"></div><div class="btn-group">`;
+    if(!alreadyScored) html+=`<button class="btn submit" onclick="submitSort(${i})">정렬 채점</button><button class="btn" onclick="shuffleSort(${i})">다시 섞기</button>`;
+    html+=nextBtn(i)+'</div>';
+  }
+
+  c.innerHTML=html; c.scrollTop=0;
+  if(q.type==='sort') buildSort(i,alreadyScored);
+}
+
+function nextBtn(i){ return i<8?`<button class="btn next-btn" onclick="buildQ(${i+1})">다음 문제 →</button>`:`<button class="btn next-btn" onclick="endExam()">채점 완료 →</button>`; }
+
+// ═══════════ SUBMIT ═══════════
+function submitFormula(i){
+  const qs=makeQuestions(curSet);
+  const q=qs[i];
+  const v=document.getElementById('finput').value.trim();
+  if(!v){showFResult('hint','수식을 먼저 입력하세요.');return;}
+  attempts[q.id]={val:v};
+  const ok=q.check(v);
+  scores[q.id]={ok,pts:q.pts};
+  const el=document.getElementById('finput');
+  el.classList.add(ok?'ok':'ng'); el.readOnly=true;
+  const res=document.getElementById('fresult');
+  res.className='result-box show '+(ok?'ok':'ng');
+  res.innerHTML=`<div class="result-label">${ok?'✓ 정답 ('+q.pts+'점)':'✗ 오답 (0점)'}</div>${q.explain}<div class="result-formula">정답 예시: ${q.answer}</div>`;
+  updateNav();
+}
+function showHint(i){ const q=makeQuestions(curSet)[i]; const el=document.getElementById('fresult'); el.className='result-box show hint'; el.innerHTML='💡 '+q.hint; }
+function showFResult(cls,msg){ const el=document.getElementById('fresult'); el.className='result-box show '+cls; el.innerHTML=msg; }
+
+function submitTableVariant(i){
+  const qs=makeQuestions(curSet);
+  const q=qs[i];
+  const tRows=getVariantTableRows(curSet);
+  let okCount=0,total=tRows.length*3;
+  const detail=[],saved={};
+  tRows.forEach((r,ri)=>{
+    const parse=id=>parseInt((document.getElementById(id)||{}).value||'',10)||0;
+    const oaV=parse('oa'+ri),daV=parse('da'+ri),caV=parse('ca'+ri);
+    saved['oa'+ri]=oaV||'';saved['da'+ri]=daV||'';saved['ca'+ri]=caV||'';
+    const d={oa:oaV===r.oa,da:daV===r.da,ca:caV===r.ca};
+    if(d.oa)okCount++;if(d.da)okCount++;if(d.ca)okCount++;
+    detail.push(d);
+  });
+  attempts[q.id]=saved;
+  scores[q.id]={ok:okCount===total,pts:q.pts,detail};
+  buildQ(i);
+}
+
+function submitTable(i){
+  const qs=makeQuestions(curSet);
+  const q=qs[i];
+  let okCount=0,total=q.rows.length*3;
+  const detail=[],saved={};
+  q.rows.forEach((r,ri)=>{
+    const parse=id=>parseInt((document.getElementById(id)||{}).value||'',10)||0;
+    const oaV=parse('oa'+ri),daV=parse('da'+ri),caV=parse('ca'+ri);
+    saved['oa'+ri]=oaV||'';saved['da'+ri]=daV||'';saved['ca'+ri]=caV||'';
+    const d={oa:oaV===r.oa,da:daV===r.da,ca:caV===r.ca};
+    if(d.oa)okCount++;if(d.da)okCount++;if(d.ca)okCount++;
+    detail.push(d);
+  });
+  attempts[q.id]=saved;
+  scores[q.id]={ok:okCount===total,pts:q.pts,detail};
+  buildQ(i);
+}
+
+function buildSort(qi,locked){
+  const q=makeQuestions(curSet)[qi];
+  const c=document.getElementById('sortContainer');
+  const sortedData = q.sorted || (curSet.sorted) || makeSorted(curSet);
+  if(!sortOrder.length||!locked) sortOrder=[...sortedData].sort(()=>Math.random()-.5);
+  c.innerHTML='';
+  sortOrder.forEach((r,i)=>{
+    const d=document.createElement('div');
+    d.className='sort-item';
+    d.dataset.who=r.who;
+    d.draggable=!locked;
+    const isCorrect=q.sorted[i]&&q.sorted[i].who===r.who;
+    if(scores[q.id]) d.classList.add(isCorrect?'correct-row':'wrong-row');
+    d.innerHTML=`<span class="sort-handle">⠿</span><span class="sort-rank">${i+1}</span><span class="sort-name">${r.who}</span><span class="sort-gender ${r.glabel===curSet.genderF?'f':'m'}">${r.glabel}</span><span class="sort-calc">계산금액 ₩${fmt(r.ca)}</span>`;
+    if(!locked){
+      d.addEventListener('dragstart',e=>{dragSrc=d;d.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
+      d.addEventListener('dragend',()=>{d.classList.remove('dragging');document.querySelectorAll('.sort-item').forEach(x=>x.classList.remove('over'));updateSortRanks()});
+      d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over')});
+      d.addEventListener('dragleave',()=>d.classList.remove('over'));
+      d.addEventListener('drop',e=>{e.stopPropagation();d.classList.remove('over');if(dragSrc!==d)c.insertBefore(dragSrc,d);return false});
+    }
+    c.appendChild(d);
+  });
+}
+function updateSortRanks(){ [...document.querySelectorAll('.sort-item')].forEach((d,i)=>d.querySelector('.sort-rank').textContent=i+1); }
+function shuffleSort(qi){ const q=makeQuestions(curSet)[qi]; const sd=q.sorted||curSet.sorted||makeSorted(curSet); sortOrder=[...sd].sort(()=>Math.random()-.5); buildSort(qi,false); document.getElementById('fresult').className='result-box'; }
+function submitSort(i){
+  const q=makeQuestions(curSet)[i];
+  const sortedData = q.sorted || curSet.sorted || makeSorted(curSet);
+  const order=[...document.querySelectorAll('.sort-item')].map(d=>d.dataset.who);
+  const correct=sortedData.map(r=>r.who);
+  const ok=JSON.stringify(order)===JSON.stringify(correct);
+  scores[q.id]={ok,pts:q.pts};
+  buildQ(i); updateNav();
+}
+
+// ═══════════ END ═══════════
+function endExam(){
+  clearInterval(timerInt);
+  const tot=totalScore();
+  bestScores[curSet.id]=Math.max(bestScores[curSet.id]||0,tot);
+  showResult();
+}
+function showResult(){
+  showScreen('result');
+  const tot=totalScore(),max=maxScore();
+  const pct=Math.round(tot/max*100);
+  let grade,cls,label;
+  if(pct>=90){grade='A';cls='grade-A';label='우수 — 합격권입니다!';}
+  else if(pct>=70){grade='B';cls='grade-B';label='양호 — 조금 더 연습하면 완벽!';}
+  else if(pct>=50){grade='C';cls='grade-C';label='보통 — 틀린 문항을 다시 확인하세요.';}
+  else{grade='F';cls='grade-F';label='미흡 — 수식 공식부터 다시 익혀보세요.';}
+  document.getElementById('finalGrade').className='final-grade '+cls;
+  document.getElementById('finalGrade').textContent=grade;
+  document.getElementById('finalLabel').textContent=`${tot} / ${max}점 (${pct}%) — ${label}`;
+  const qs=makeQuestions(curSet);
+  const bd=document.getElementById('scoreBreakdown');
+  let bhtml='';
+  qs.forEach((q,i)=>{
+    const s=scores[q.id];
+    const ok=s&&s.ok;
+    bhtml+=`<div class="breakdown-row"><div class="breakdown-label">Q${i+1} ${q.category}</div><div class="breakdown-val ${ok?'ok':'ng'}">${ok?q.pts:0} / ${q.pts}점</div></div>`;
+  });
+  bhtml+=`<div class="breakdown-row" style="font-weight:700"><div class="breakdown-label">총점</div><div class="breakdown-val">${tot} / ${max}점</div></div>`;
+  bd.innerHTML=bhtml;
+}
+
+// ════════════════════════════════════════
+//  세트 7~9: 다른 함수 조합 세트
+// ════════════════════════════════════════
+
+// ── SET 7: G여행사 — RANK, CHOOSE, AVERAGEIF ──
+const SET7 = {
+  id:7, label:'세트 7 — G여행사', type:'variant',
+  title:'G여행사 패키지 판매 현황',
+  desc:'국내·동남아·유럽 패키지 12건 데이터. RANK·CHOOSE·AVERAGEIF 등 다른 함수가 출제됩니다.',
+  rows:[
+    {item:'국내',who:'강민지',g:1,qty:2,disc:.05,age:28},
+    {item:'동남아',who:'김수빈',g:2,qty:1,disc:.10,age:35},
+    {item:'유럽',who:'김영호',g:2,qty:1,disc:.15,age:42},
+    {item:'국내',who:'나준혁',g:1,qty:3,disc:.05,age:22},
+    {item:'동남아',who:'박민영',g:2,qty:2,disc:.10,age:31},
+    {item:'유럽',who:'서수진',g:1,qty:1,disc:.15,age:55},
+    {item:'국내',who:'오영준',g:1,qty:4,disc:.05,age:19},
+    {item:'동남아',who:'이수영',g:2,qty:2,disc:.10,age:48},
+    {item:'유럽',who:'이영민',g:1,qty:1,disc:.20,age:33},
+    {item:'국내',who:'정민수',g:2,qty:5,disc:.05,age:27},
+    {item:'동남아',who:'최수현',g:1,qty:3,disc:.10,age:44},
+    {item:'유럽',who:'황영란',g:2,qty:2,disc:.20,age:38},
+  ],
+  prices:{국내:350000, 동남아:850000, 유럽:1800000},
+  genderMap:{1:'남성',2:'여성'}, genderF:'여성', genderM:'남성',
+};
+SET7.rows = SET7.rows.map(r=>({
+  ...r,
+  oa: r.qty * SET7.prices[r.item],
+  get da(){ return Math.round(this.oa * r.disc); },
+  get ca(){ return this.oa - this.da; }
+}));
+SET7.rows.forEach(r=>{ r.oa=r.qty*SET7.prices[r.item]; r.da=Math.round(r.oa*r.disc); r.ca=r.oa-r.da; });
+SET7.sorted = [...SET7.rows].map(r=>({...r,glabel:SET7.genderMap[r.g]})).sort((a,b)=>{
+  if((a.glabel==='여성')!==(b.glabel==='여성')) return a.glabel==='여성'?-1:1;
+  return b.ca-a.ca;
+});
+
+function makeQuestions7(){
+  const s=SET7;
+  return [
+    { id:'q1',title:'등급 분류 — CHOOSE 함수',category:'① 등급 분류',pts:10,cell:'H5',
+      context:`성별코드(D열)에서 <strong>1 → "남성"</strong>, <strong>2 → "여성"</strong>으로 변환합니다.<br>이번엔 <strong>CHOOSE 함수</strong>를 사용하세요.`,
+      conditions:['CHOOSE 함수 사용 필수','IF 사용 시 오답 처리'],
+      placeholder:'=CHOOSE(D5,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('CHOOSE')&&n.includes('D5')&&(n.includes('"남성"')||n.includes("'남성'"))&&(n.includes('"여성"')||n.includes("'여성'")); },
+      answer:'=CHOOSE(D5,"남성","여성")',
+      hint:'CHOOSE(인덱스, 값1, 값2) — D5가 1이면 첫 번째 값, 2이면 두 번째 값 반환',
+      explain:'CHOOSE(D5,"남성","여성") — D5 값이 인덱스가 되어 순서대로 반환합니다.',
+      type:'formula' },
+    { id:'q2',title:'판매금액 수식 — IF 중첩',category:'② 판매금액',pts:12,cell:'I5',
+      context:`패키지 수량(F열) × 단가를 계산합니다.<br>단가: 국내 350,000 / 동남아 850,000 / 유럽 1,800,000`,
+      conditions:['IF 중첩 사용','B5 패키지명으로 분기'],
+      placeholder:'=IF(B5="국내",',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('IF')&&n.includes('B5')&&n.includes('F5')&&n.includes('350000')&&n.includes('850000')&&n.includes('1800000'); },
+      answer:'=IF(B5="국내",F5*350000,IF(B5="동남아",F5*850000,F5*1800000))',
+      hint:'국내 350000, 동남아 850000, 유럽 1800000 순서로 중첩',
+      explain:'패키지 종류에 따라 단가를 IF 중첩으로 분기합니다.',
+      type:'formula' },
+    { id:'q3',title:'할인금액·계산금액',category:'③④ 할인금액·계산금액',pts:8,cell:'J5 / K5',
+      context:`<strong>할인금액(J5)</strong> = 판매금액(I5) × 할인율(G5)<br><strong>계산금액(K5)</strong> = 판매금액(I5) − 할인금액(J5)<br>쉼표(,)로 구분해서 두 수식 모두 입력하세요.`,
+      conditions:['J5: I5*G5','K5: I5-J5'],
+      placeholder:'=ROUND(I5*G5,0), =I5-J5',
+      check(v){ const p=v.split(','); if(p.length<2)return false; const j=p[0].replace(/\s/g,'').toUpperCase(),k=p[1].replace(/\s/g,'').toUpperCase(); return j.includes('I5')&&j.includes('G5')&&k.includes('I5')&&k.includes('J5')&&k.includes('-'); },
+      answer:'=ROUND(I5*G5,0), =I5-J5',
+      hint:'J5: =ROUND(I5*G5,0) / K5: =I5-J5',
+      explain:'할인금액은 판매금액×할인율, 계산금액은 판매금액−할인금액입니다.',
+      type:'formula' },
+    { id:'q4',title:'계산금액 순위 — RANK 함수',category:'⑤ 순위 (RANK)',pts:10,cell:'L5',
+      context:`각 행의 <strong>계산금액(K열) 순위</strong>를 전체 12명 중 내림차순으로 구하세요.<br>데이터 범위: K5:K16 (절대참조 필수)`,
+      conditions:['RANK 함수 사용 필수','K5:K16 절대참조($)','내림차순(0 또는 생략)'],
+      placeholder:'=RANK(K5,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('RANK')&&n.includes('K5')&&(n.includes('$K$5:$K$16')||n.includes('K5:K16')); },
+      answer:'=RANK(K5,$K$5:$K$16,0)',
+      hint:'RANK(기준값, 범위, 0) — 0은 내림차순(큰 값이 1위)',
+      explain:'RANK(K5,$K$5:$K$16,0) — 절대참조를 써야 아래 행으로 복사해도 범위가 고정됩니다.',
+      type:'formula' },
+    { id:'q5',title:'표 빈칸 채우기',category:'계산 실습',pts:12,
+      context:'아래 3개 행의 판매금액·할인금액·계산금액을 직접 계산하여 입력하세요.',
+      conditions:['국내 350,000 / 동남아 850,000 / 유럽 1,800,000','할인금액 = 판매금액 × 할인율 (반올림)','계산금액 = 판매금액 − 할인금액'],
+      type:'table7' },
+    { id:'q6',title:'SUMIF — 여성 판매금액 합계',category:'⑥ SUMIF',pts:10,cell:'K18',
+      context:`<strong>여성(H열이 "여성")</strong>인 고객들의 <strong>판매금액(I열) 합계</strong>를 구하세요.<br>범위: H5:H16, I5:I16`,
+      conditions:['SUMIF 또는 SUMIFS 필수'],
+      placeholder:'=SUMIF(H5:H16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('SUMIF')&&n.includes('H5:H16')&&(n.includes('"여성"')||n.includes("'여성'"))&&n.includes('I5:I16'); },
+      answer:'=SUMIF(H5:H16,"여성",I5:I16)',
+      hint:'SUMIF(H5:H16,"여성",I5:I16)',
+      explain:'H열에서 "여성"인 행의 I열 판매금액을 합산합니다.',
+      type:'formula' },
+    { id:'q7',title:'AVERAGEIF — 동남아 평균 계산금액',category:'⑦ AVERAGEIF',pts:10,cell:'K20',
+      context:`<strong>동남아 패키지</strong>의 <strong>계산금액(K열) 평균</strong>을 구하고 <strong>"원"</strong>을 함께 출력하세요.<br>범위: B5:B16, K5:K16`,
+      conditions:['AVERAGEIF 함수 필수','&"원" 텍스트 연결'],
+      placeholder:'=AVERAGEIF(B5:B16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('AVERAGEIF')&&n.includes('B5:B16')&&(n.includes('"동남아"')||n.includes("'동남아'"))&&(n.includes('&"원"')||n.includes("&'원'")); },
+      answer:'=AVERAGEIF(B5:B16,"동남아",K5:K16)&"원"',
+      hint:'AVERAGEIF(조건범위, 조건, 평균범위)&"원"',
+      explain:'동남아 행만 골라 K열 평균을 구한 후 &"원"으로 텍스트를 붙입니다.',
+      type:'formula' },
+    { id:'q8',title:'LARGE — 계산금액 상위 3위',category:'⑧ LARGE',pts:12,cell:'K22',
+      context:`계산금액(K열) 중 <strong>3번째로 큰 값</strong>을 구하세요.<br>범위: K5:K16`,
+      conditions:['LARGE 함수 필수','범위: K5:K16','3번째 큰 값'],
+      placeholder:'=LARGE(K5:K16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('LARGE')&&n.includes('K5:K16')&&n.includes('3'); },
+      answer:'=LARGE(K5:K16,3)',
+      hint:'LARGE(범위, n) — n번째로 큰 값 반환',
+      explain:'LARGE(K5:K16,3) — 전체 계산금액 중 3번째로 큰 값을 반환합니다.',
+      type:'formula' },
+    { id:'q9',title:'정렬 순서 배치',category:'정렬 (SORT)',pts:16,
+      context:`행들을 올바른 순서로 드래그하세요.<br><strong>1순위</strong>: 성별 — 여성 먼저, 남성 나중<br><strong>2순위</strong>: 계산금액 내림차순`,
+      conditions:['여성 먼저','계산금액 내림차순'],
+      type:'sort7' },
+  ];
+}
+
+// ── SET 8: H회사 성과급 — VLOOKUP, IFS, COUNTIFS ──
+const SET8 = {
+  id:8, label:'세트 8 — H회사', type:'variant',
+  title:'H회사 직원 성과급 현황',
+  desc:'영업·개발·디자인 직군 12명 데이터. VLOOKUP·IFS·COUNTIFS 등 다른 함수가 출제됩니다.',
+  rows:[
+    {item:'영업',who:'강수민',g:1,qty:85,disc:.10,grade:'A'},
+    {item:'개발',who:'김도현',g:2,qty:92,disc:.15,grade:'S'},
+    {item:'디자인',who:'김영수',g:1,qty:78,disc:.05,grade:'B'},
+    {item:'영업',who:'나민준',g:2,qty:95,disc:.15,grade:'S'},
+    {item:'개발',who:'박수영',g:1,qty:70,disc:.05,grade:'C'},
+    {item:'디자인',who:'서영민',g:2,qty:88,disc:.10,grade:'A'},
+    {item:'영업',who:'오준혁',g:1,qty:63,disc:.03,grade:'C'},
+    {item:'개발',who:'이수진',g:2,qty:90,disc:.15,grade:'A'},
+    {item:'디자인',who:'이영호',g:1,qty:75,disc:.05,grade:'B'},
+    {item:'영업',who:'정민영',g:2,qty:82,disc:.10,grade:'A'},
+    {item:'개발',who:'최수현',g:1,qty:97,disc:.15,grade:'S'},
+    {item:'디자인',who:'홍영준',g:2,qty:68,disc:.03,grade:'C'},
+  ],
+  prices:{영업:500000, 개발:700000, 디자인:600000},
+  genderMap:{1:'남성',2:'여성'}, genderF:'여성', genderM:'남성',
+};
+SET8.rows.forEach(r=>{ r.oa=r.qty*SET8.prices[r.item]/100*10; r.oa=SET8.prices[r.item]; r.da=Math.round(r.oa*r.disc); r.ca=r.oa-r.da; });
+SET8.sorted = [...SET8.rows].map(r=>({...r,glabel:SET8.genderMap[r.g]})).sort((a,b)=>{
+  if((a.glabel==='여성')!==(b.glabel==='여성')) return a.glabel==='여성'?-1:1;
+  return b.ca-a.ca;
+});
+
+function makeQuestions8(){
+  return [
+    { id:'q1',title:'성별 변환 — IFS 함수',category:'① 성별',pts:10,cell:'H5',
+      context:`성별코드(D열)에서 <strong>1 → "남성"</strong>, <strong>2 → "여성"</strong>으로 변환합니다.<br>이번엔 <strong>IFS 함수</strong>를 사용하세요.`,
+      conditions:['IFS 함수 사용 필수','IF 사용 시 오답 처리'],
+      placeholder:'=IFS(D5=1,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('IFS')&&n.includes('D5=1')&&(n.includes('"남성"'))&&(n.includes('"여성"')); },
+      answer:'=IFS(D5=1,"남성",D5=2,"여성")',
+      hint:'IFS(조건1, 값1, 조건2, 값2) — 조건을 순서대로 검사하여 처음 참인 값 반환',
+      explain:'IFS는 여러 조건을 순서대로 검사합니다. IF 중첩보다 가독성이 좋습니다.',
+      type:'formula' },
+    { id:'q2',title:'기본성과급 — VLOOKUP',category:'② 기본성과급',pts:12,cell:'I5',
+      context:`직군(B열)에 따라 기본성과급을 구합니다. 아래 단가표를 참조하세요.<br>영업 500,000 / 개발 700,000 / 디자인 600,000<br>실제 시험에서는 별도 단가 테이블을 참조하는 <strong>VLOOKUP</strong>을 사용합니다.`,
+      conditions:['VLOOKUP 함수 사용','B5가 찾을 값','단가표 범위 절대참조'],
+      placeholder:'=VLOOKUP(B5,$M$',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('VLOOKUP')&&n.includes('B5'); },
+      answer:'=VLOOKUP(B5,$M$5:$N$7,2,0)',
+      hint:'VLOOKUP(찾을값, 테이블범위, 열번호, 0) — 0은 정확히 일치',
+      explain:'VLOOKUP(B5,$M$5:$N$7,2,0) — B5 직군명을 단가표에서 찾아 두 번째 열(단가)을 반환합니다.',
+      type:'formula' },
+    { id:'q3',title:'할인금액·계산금액',category:'③④ 할인금액·계산금액',pts:8,cell:'J5 / K5',
+      context:`<strong>할인금액(J5)</strong> = 기본성과급(I5) × 할인율(G5)<br><strong>계산금액(K5)</strong> = 기본성과급(I5) − 할인금액(J5)`,
+      conditions:['J5: I5*G5','K5: I5-J5'],
+      placeholder:'=ROUND(I5*G5,0), =I5-J5',
+      check(v){ const p=v.split(','); if(p.length<2)return false; const j=p[0].replace(/\s/g,'').toUpperCase(),k=p[1].replace(/\s/g,'').toUpperCase(); return j.includes('I5')&&j.includes('G5')&&k.includes('I5')&&k.includes('J5'); },
+      answer:'=ROUND(I5*G5,0), =I5-J5',
+      hint:'J5: =ROUND(I5*G5,0) / K5: =I5-J5',
+      explain:'할인금액은 기본성과급×할인율, 계산금액은 기본성과급−할인금액입니다.',
+      type:'formula' },
+    { id:'q4',title:'평균',category:'⑤ 평균',pts:8,cell:'I17',
+      context:`기본성과급(I열) 5~16행의 <strong>평균</strong>을 반올림하여 구하세요.`,
+      conditions:['AVERAGE 함수','ROUND 반올림','I5:I16 범위'],
+      placeholder:'=ROUND(AVERAGE(',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('AVERAGE')&&n.includes('I5:I16'); },
+      answer:'=ROUND(AVERAGE(I5:I16),0)',
+      hint:'=ROUND(AVERAGE(I5:I16),0)',
+      explain:'AVERAGE로 평균 후 ROUND로 정수 처리합니다.',
+      type:'formula' },
+    { id:'q5',title:'표 빈칸 채우기',category:'계산 실습',pts:12,
+      context:'아래 3개 행의 기본성과급·할인금액·계산금액을 입력하세요.',
+      conditions:['영업 500,000 / 개발 700,000 / 디자인 600,000','할인금액 = 기본성과급 × 할인율 (반올림)'],
+      type:'table8' },
+    { id:'q6',title:'SUMIF — 개발직군 계산금액 합계',category:'⑥ SUMIF',pts:10,cell:'K18',
+      context:`<strong>직군(B열)이 "개발"</strong>인 직원들의 <strong>계산금액(K열) 합계</strong>를 구하세요.`,
+      conditions:['SUMIF 또는 SUMIFS 필수'],
+      placeholder:'=SUMIF(B5:B16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('SUMIF')&&n.includes('B5:B16')&&(n.includes('"개발"')||n.includes("'개발'"))&&n.includes('K5:K16'); },
+      answer:'=SUMIF(B5:B16,"개발",K5:K16)',
+      hint:'SUMIF(B5:B16,"개발",K5:K16)',
+      explain:'B열에서 "개발"인 행의 K열 계산금액을 합산합니다.',
+      type:'formula' },
+    { id:'q7',title:'COUNTIFS — 여성이면서 할인금액 5만 이상',category:'⑦ COUNTIFS',pts:10,cell:'K20',
+      context:`<strong>여성(H열)</strong>이면서 <strong>할인금액(J열)이 50,000 이상</strong>인 사람 수를 구하고 <strong>"명"</strong>을 함께 출력하세요.`,
+      conditions:['COUNTIFS 함수 필수 (조건 2개)','&"명" 연결'],
+      placeholder:'=COUNTIFS(H5:H16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('COUNTIFS')&&n.includes('H5:H16')&&(n.includes('"여성"'))&&(n.includes('J5:J16'))&&(n.includes('50000')||n.includes('">=50000"'))&&(n.includes('&"명"')||n.includes("&'명'")); },
+      answer:'=COUNTIFS(H5:H16,"여성",J5:J16,">=50000")&"명"',
+      hint:'COUNTIFS(조건범위1, 조건1, 조건범위2, 조건2)&"명"',
+      explain:'COUNTIFS로 여성이면서 할인금액≥50000인 행 수를 구하고 "명"을 붙입니다.',
+      type:'formula' },
+    { id:'q8',title:'SUMIFS — 여성·할인율 15% 계산금액 합',category:'⑧ SUMIFS',pts:12,cell:'K22',
+      context:`<strong>여성(H열)</strong>이면서 <strong>할인율(G열)이 15%</strong>인 직원의 <strong>계산금액(K열) 합</strong>을 구하세요.`,
+      conditions:['SUMIFS 필수','조건: H열="여성", G열=0.15'],
+      placeholder:'=SUMIFS(K5:K16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('SUMIFS')&&n.includes('K5:K16')&&n.includes('H5:H16')&&n.includes('"여성"')&&n.includes('G5:G16')&&(n.includes('0.15')||n.includes('15%')||n.includes('"0.15"')); },
+      answer:'=SUMIFS(K5:K16,H5:H16,"여성",G5:G16,0.15)',
+      hint:'SUMIFS(합산범위, 조건범위1, 조건1, 조건범위2, 조건2)',
+      explain:'여성이면서 할인율이 0.15인 행의 계산금액을 합산합니다.',
+      type:'formula' },
+    { id:'q9',title:'정렬 순서 배치',category:'정렬 (SORT)',pts:16,
+      context:`행들을 올바른 순서로 드래그하세요.<br><strong>1순위</strong>: 성별 — 여성 먼저<br><strong>2순위</strong>: 계산금액 내림차순`,
+      conditions:['여성 먼저','계산금액 내림차순'],
+      type:'sort8' },
+  ];
+}
+
+// ── SET 9: I공장 생산 현황 — LEFT/MID, MAX/MIN, DSUM ──
+const SET9 = {
+  id:9, label:'세트 9 — I공장', type:'variant',
+  title:'I공장 제품 생산 현황',
+  desc:'A·B·C 라인 12건 데이터. LEFT/MID·MAX/MIN·SMALL 등 문자·통계 함수가 출제됩니다.',
+  rows:[
+    {item:'A라인',who:'강영수',g:1,code:'A-001',qty:120,disc:.05},
+    {item:'B라인',who:'김수민',g:2,code:'B-002',qty:85,disc:.10},
+    {item:'C라인',who:'김영진',g:1,code:'C-003',qty:200,disc:.03},
+    {item:'A라인',who:'나민영',g:2,code:'A-004',qty:150,disc:.05},
+    {item:'B라인',who:'박수현',g:1,code:'B-005',qty:95,disc:.10},
+    {item:'C라인',who:'서민수',g:2,code:'C-006',qty:180,disc:.03},
+    {item:'A라인',who:'오영준',g:1,code:'A-007',qty:110,disc:.05},
+    {item:'B라인',who:'이수영',g:2,code:'B-008',qty:75,disc:.10},
+    {item:'C라인',who:'이영미',g:1,code:'C-009',qty:220,disc:.03},
+    {item:'A라인',who:'정민수',g:2,code:'A-010',qty:130,disc:.05},
+    {item:'B라인',who:'최수현',g:1,code:'B-011',qty:100,disc:.10},
+    {item:'C라인',who:'홍영준',g:2,code:'C-012',qty:190,disc:.03},
+  ],
+  prices:{'A라인':2500,'B라인':3800,'C라인':1900},
+  genderMap:{1:'남성',2:'여성'}, genderF:'여성', genderM:'남성',
+};
+SET9.rows.forEach(r=>{ r.oa=r.qty*SET9.prices[r.item]; r.da=Math.round(r.oa*r.disc); r.ca=r.oa-r.da; });
+SET9.sorted=[...SET9.rows].map(r=>({...r,glabel:SET9.genderMap[r.g]})).sort((a,b)=>{
+  if((a.glabel==='여성')!==(b.glabel==='여성')) return a.glabel==='여성'?-1:1;
+  return b.ca-a.ca;
+});
+
+function makeQuestions9(){
+  return [
+    { id:'q1',title:'라인 코드 추출 — LEFT 함수',category:'① 라인코드 추출',pts:10,cell:'H5',
+      context:`제품코드(D열, 예: "A-001")에서 <strong>왼쪽 1글자</strong>(라인 구분 알파벳)만 추출하세요.<br><strong>LEFT 함수</strong>를 사용합니다.`,
+      conditions:['LEFT 함수 사용 필수','D5 셀 참조','추출 글자수: 1'],
+      placeholder:'=LEFT(D5,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('LEFT')&&n.includes('D5')&&n.includes('1'); },
+      answer:'=LEFT(D5,1)',
+      hint:'LEFT(텍스트, 글자수) — 왼쪽에서 지정한 글자수만큼 추출',
+      explain:'LEFT(D5,1) — 제품코드 "A-001"에서 왼쪽 1글자 "A"를 추출합니다.',
+      type:'formula' },
+    { id:'q2',title:'생산금액 수식 — IF 중첩',category:'② 생산금액',pts:12,cell:'I5',
+      context:`생산수량(F열) × 단가를 계산합니다.<br>단가: A라인 2,500 / B라인 3,800 / C라인 1,900`,
+      conditions:['IF 중첩 사용','B5 라인명으로 분기'],
+      placeholder:'=IF(B5="A라인",',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('IF')&&n.includes('B5')&&n.includes('F5')&&n.includes('2500')&&n.includes('3800')&&n.includes('1900'); },
+      answer:'=IF(B5="A라인",F5*2500,IF(B5="B라인",F5*3800,F5*1900))',
+      hint:'A라인 2500, B라인 3800, C라인 1900',
+      explain:'라인에 따라 단가를 IF 중첩으로 분기합니다.',
+      type:'formula' },
+    { id:'q3',title:'할인금액·계산금액',category:'③④ 할인금액·계산금액',pts:8,cell:'J5 / K5',
+      context:`<strong>할인금액(J5)</strong> = 생산금액(I5) × 할인율(G5)<br><strong>계산금액(K5)</strong> = 생산금액(I5) − 할인금액(J5)`,
+      conditions:['J5: I5*G5','K5: I5-J5'],
+      placeholder:'=ROUND(I5*G5,0), =I5-J5',
+      check(v){ const p=v.split(','); if(p.length<2)return false; const j=p[0].replace(/\s/g,'').toUpperCase(),k=p[1].replace(/\s/g,'').toUpperCase(); return j.includes('I5')&&j.includes('G5')&&k.includes('I5')&&k.includes('J5'); },
+      answer:'=ROUND(I5*G5,0), =I5-J5',
+      hint:'J5: =ROUND(I5*G5,0) / K5: =I5-J5',
+      explain:'할인금액은 생산금액×할인율, 계산금액은 생산금액−할인금액입니다.',
+      type:'formula' },
+    { id:'q4',title:'평균',category:'⑤ 평균',pts:8,cell:'I17',
+      context:`생산금액(I열) 5~16행 <strong>평균</strong>을 반올림하여 구하세요.`,
+      conditions:['AVERAGE','ROUND','I5:I16'],
+      placeholder:'=ROUND(AVERAGE(',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('AVERAGE')&&n.includes('I5:I16'); },
+      answer:'=ROUND(AVERAGE(I5:I16),0)',
+      hint:'=ROUND(AVERAGE(I5:I16),0)',
+      explain:'AVERAGE로 평균 후 ROUND로 정수 처리합니다.',
+      type:'formula' },
+    { id:'q5',title:'표 빈칸 채우기',category:'계산 실습',pts:12,
+      context:'아래 3개 행의 생산금액·할인금액·계산금액을 입력하세요.',
+      conditions:['A라인 2,500 / B라인 3,800 / C라인 1,900','할인금액 = 생산금액 × 할인율 (반올림)'],
+      type:'table9' },
+    { id:'q6',title:'MAX — 최대 계산금액',category:'⑥ MAX',pts:10,cell:'K18',
+      context:`계산금액(K열) 중 <strong>최댓값</strong>을 구하세요.<br>범위: K5:K16`,
+      conditions:['MAX 함수 필수'],
+      placeholder:'=MAX(K5:K16)',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('MAX')&&n.includes('K5:K16'); },
+      answer:'=MAX(K5:K16)',
+      hint:'MAX(K5:K16) — 범위 내 최댓값 반환',
+      explain:'MAX(K5:K16)으로 계산금액 중 가장 큰 값을 구합니다.',
+      type:'formula' },
+    { id:'q7',title:'SMALL — 2번째 작은 계산금액',category:'⑦ SMALL',pts:10,cell:'K20',
+      context:`계산금액(K열) 중 <strong>2번째로 작은 값</strong>을 구하고 <strong>"원"</strong>을 함께 출력하세요.`,
+      conditions:['SMALL 함수 필수','&"원" 연결'],
+      placeholder:'=SMALL(K5:K16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('SMALL')&&n.includes('K5:K16')&&n.includes('2')&&(n.includes('&"원"')||n.includes("&'원'")); },
+      answer:'=SMALL(K5:K16,2)&"원"',
+      hint:'SMALL(범위, n)&"원" — n번째로 작은 값 후 텍스트 연결',
+      explain:'SMALL(K5:K16,2)는 2번째로 작은 값을 반환하고 &"원"으로 단위를 붙입니다.',
+      type:'formula' },
+    { id:'q8',title:'SUMIFS — A라인·여성 생산금액 합',category:'⑧ SUMIFS',pts:12,cell:'K22',
+      context:`<strong>A라인(B열)</strong>이면서 <strong>여성(H열)</strong>인 직원의 <strong>계산금액(K열) 합</strong>을 구하세요.`,
+      conditions:['SUMIFS 필수','B열="A라인", H열="여성"'],
+      placeholder:'=SUMIFS(K5:K16,',
+      check(v){ const n=v.replace(/\s/g,'').toUpperCase(); return n.includes('SUMIFS')&&n.includes('K5:K16')&&n.includes('B5:B16')&&(n.includes('"A라인"')||n.includes("'A라인'"))&&n.includes('H5:H16')&&(n.includes('"여성"')); },
+      answer:'=SUMIFS(K5:K16,B5:B16,"A라인",H5:H16,"여성")',
+      hint:'SUMIFS(합산범위, 조건범위1, 조건1, 조건범위2, 조건2)',
+      explain:'A라인이면서 여성인 행의 계산금액을 합산합니다.',
+      type:'formula' },
+    { id:'q9',title:'정렬 순서 배치',category:'정렬 (SORT)',pts:16,
+      context:`행들을 올바른 순서로 드래그하세요.<br><strong>1순위</strong>: 성별 — 여성 먼저<br><strong>2순위</strong>: 계산금액 내림차순`,
+      conditions:['여성 먼저','계산금액 내림차순'],
+      type:'sort9' },
+  ];
+}
+
+// ═══════════ 세트 7~9 통합 처리 ═══════════
+// variant 세트 SETS 배열에 추가
+SETS.push(SET7, SET8, SET9);
+
+// variant 세트용 계산 테이블 (Q5 type 처리)
+function getVariantTableRows(s){
+  if(!s || !s.rows) return [];
+  return s.rows.slice(0,3).map(r=>({item:r.item,who:r.who,qty:r.qty,discPct:Math.round(r.disc*100)+'%',oa:r.oa,da:r.da,ca:r.ca}));
+}
+
+// variant 세트용 정렬 데이터
+function getVariantSorted(s){
+  if(s.sorted) return s.sorted;
+  return makeSorted(s);
+}
+
+// ── GUIDE TABS ──
+function switchGuide(id, el){
+  document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.gpanel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('gp-'+id).classList.add('on');
+}
+
+// ── INIT ──
+buildSetGrid();
+</script>
+</body>
+</html>
