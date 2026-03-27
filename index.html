@@ -211,6 +211,55 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:10
 .danger-item{font-size:.78rem;color:var(--ink2);padding:4px 0;border-bottom:1px solid var(--rule);line-height:1.6;display:flex;gap:6px;align-items:flex-start}
 .danger-item::before{content:'✗';color:var(--ng);font-weight:700;flex-shrink:0;margin-top:1px}
 .danger-item:last-child{border-bottom:none}
+
+/* ── 메인 탭 ── */
+.main-tab{padding:8px 18px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:rgba(255,255,255,.5);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;font-family:var(--sans);white-space:nowrap}
+.main-tab:hover{color:rgba(255,255,255,.85)}
+.main-tab.on{color:#fff;border-bottom-color:#fff}
+.main-panel{display:none}.main-panel.on{display:block}
+
+/* ── 학습 탭 ── */
+.study-wrap{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.study-tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:1.5rem;flex-wrap:wrap}
+.stab{padding:8px 16px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;font-family:var(--sans);white-space:nowrap}
+.stab:hover{color:var(--ink)}
+.stab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.spanel{display:none}.spanel.on{display:block;animation:fadeIn .2s ease}
+
+/* 함수 카드 */
+.fn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1.5rem}
+.fn-card{background:var(--paper);border:1px solid var(--rule);border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+.fn-card:hover{box-shadow:var(--sh-lg)}
+.fn-head{padding:.9rem 1.1rem;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px}
+.fn-name{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--accent2)}
+.fn-cat{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:3px;background:#dbeafe;color:#1e3a8a;letter-spacing:.5px}
+.fn-body{padding:.9rem 1.1rem}
+.fn-desc{font-size:.8rem;color:var(--ink2);line-height:1.7;margin-bottom:.7rem}
+.fn-syntax{font-family:var(--mono);font-size:.74rem;background:#f0ede6;border-left:3px solid var(--accent2);padding:7px 10px;border-radius:0 6px 6px 0;color:var(--accent2);margin-bottom:.7rem;line-height:1.8}
+.fn-ex{font-size:.75rem;background:var(--bg);border-radius:6px;padding:.6rem .8rem;line-height:1.8}
+.fn-ex .ex-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:3px}
+.fn-ex code{font-family:var(--mono);font-size:.72rem;color:var(--ok);background:var(--ok-bg);padding:1px 5px;border-radius:3px}
+.fn-warn{font-size:.75rem;margin-top:.6rem;padding:.5rem .8rem;background:var(--warn-bg);border:1px solid #fde68a;border-radius:6px;color:var(--warn);line-height:1.6}
+
+/* 비교표 */
+.cmp-table{width:100%;border-collapse:collapse;font-size:.78rem;margin:1rem 0}
+.cmp-table th{background:#f0ede6;padding:7px 10px;border:1px solid var(--rule);font-weight:700;text-align:center}
+.cmp-table td{padding:6px 10px;border:1px solid var(--rule);vertical-align:top;line-height:1.6}
+.cmp-table td:first-child{font-family:var(--mono);font-weight:700;color:var(--accent2);white-space:nowrap}
+.cmp-table tr:nth-child(even) td{background:#faf8f4}
+
+/* 개념 카드 */
+.concept-card{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1.1rem 1.2rem;margin-bottom:.8rem}
+.concept-title{font-size:.85rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.concept-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono)}
+.concept-body{font-size:.78rem;color:var(--ink2);line-height:1.8}
+.concept-body code{font-family:var(--mono);font-size:.72rem;background:#f0ede6;padding:1px 5px;border-radius:3px;color:var(--accent2)}
+.concept-body strong{color:var(--ink)}
+.ok-list li{padding:3px 0;list-style:none;display:flex;gap:7px;align-items:flex-start}
+.ok-list li::before{content:'✓';color:var(--ok);font-weight:700;flex-shrink:0}
+.ng-list li{padding:3px 0;list-style:none;display:flex;gap:7px;align-items:flex-start}
+.ng-list li::before{content:'✗';color:var(--ng);font-weight:700;flex-shrink:0}
+@media(max-width:700px){.fn-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -224,21 +273,504 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:10
         <div class="score-pill" id="globalRecord">전체 최고점: —</div>
       </div>
     </div>
+    <div style="display:flex;gap:0;padding:0 2rem;border-top:1px solid rgba(255,255,255,.1)">
+      <button class="main-tab on" onclick="switchMain('practice',this)">시험 연습</button>
+      <button class="main-tab" onclick="switchMain('study',this)">함수 학습</button>
+      <button class="main-tab" onclick="switchMain('guide',this)">실전 가이드</button>
+    </div>
   </div>
+
+  <!-- ══ 시험 연습 패널 ══ -->
+  <div class="main-panel on" id="mp-practice">
   <div class="set-select">
     <div style="margin-top:2rem">
-      <div class="exam-badge">총 6세트 · 40분 타이머</div>
+      <div class="exam-badge">총 9세트 · 40분 타이머</div>
       <h1>세트를 선택해서<br><em>시험을 시작하세요</em></h1>
-      <p>각 세트는 동일한 유형(①~⑩ 수식 + 정렬)이지만 업종·데이터·조건이 모두 다릅니다.<br>모든 세트를 완주하면 실전에서 어떤 데이터가 나와도 대응할 수 있습니다.</p>
+      <p>세트마다 업종·데이터·출제 함수가 다릅니다. 세트 1~6은 핵심 패턴, 세트 7~9는 변형 함수 조합입니다.</p>
     </div>
     <div class="set-grid" id="setGrid"></div>
     <div style="background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1.2rem;font-size:.78rem;color:var(--ink2);line-height:1.8;margin-bottom:2.5rem">
-      <strong style="color:var(--ink)">공통 출제 구조 (모든 세트 동일)</strong><br>
-      Q1 성별변환(IF) · Q2 금액계산(IF중첩) · Q3 할인금액·계산금액 · Q4 평균(AVERAGE) · Q5 표 빈칸채우기 · Q6 SUMIF · Q7 COUNTIF·&"단위" · Q8 SUMIFS · Q9 정렬(SORT)
+      <strong style="color:var(--ink)">공통 출제 구조</strong><br>
+      Q1 코드→텍스트 변환 · Q2 금액계산 · Q3 할인금액·계산금액 · Q4 통계 함수 · Q5 표 빈칸채우기 · Q6 SUMIF · Q7 COUNTIF계열 · Q8 SUMIFS · Q9 정렬(SORT)
     </div>
 
-    <!-- ══ 실제 작업·출력 가이드 ══ -->
-    <div style="border-top:2px solid var(--ink);padding-top:2rem;margin-bottom:3rem">
+  </div><!-- end set-select -->
+  </div><!-- end mp-practice -->
+
+  <!-- ══ 함수 학습 패널 ══ -->
+  <div class="main-panel" id="mp-study">
+  <div class="study-wrap">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem">SP 함수 완전 정복</div>
+      <h2 style="font-size:1.4rem;font-weight:900;letter-spacing:-.5px">시험에 나오는 함수, 전부 여기 있습니다</h2>
+    </div>
+
+    <div class="study-tabs">
+      <button class="stab on" onclick="switchStudy('if',this)">IF 계열</button>
+      <button class="stab" onclick="switchStudy('sum',this)">SUM 계열</button>
+      <button class="stab" onclick="switchStudy('count',this)">COUNT 계열</button>
+      <button class="stab" onclick="switchStudy('lookup',this)">VLOOKUP</button>
+      <button class="stab" onclick="switchStudy('stat',this)">통계 함수</button>
+      <button class="stab" onclick="switchStudy('text',this)">텍스트 함수</button>
+      <button class="stab" onclick="switchStudy('sort',this)">정렬·서식</button>
+      <button class="stab" onclick="switchStudy('mistake',this)">자주 틀리는 것</button>
+    </div>
+
+    <!-- IF 계열 -->
+    <div class="spanel on" id="sp-if">
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">IF</span><span class="fn-cat">조건 분기</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건이 참이면 값1, 거짓이면 값2를 반환합니다. 가장 기본적인 분기 함수.</div>
+            <div class="fn-syntax">=IF(조건, 참일때값, 거짓일때값)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=IF(D5=1,"남성","여성")</code><br>
+              D5가 1이면 "남성", 아니면 "여성" 반환
+            </div>
+            <div class="fn-warn">⚠️ 문제에서 IF 지정 시 CHOOSE·IFS 사용하면 0점</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">IF 중첩</span><span class="fn-cat">다중 분기</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">IF 안에 IF를 넣어 3개 이상 조건을 처리합니다. 단가가 3종류일 때 사용.</div>
+            <div class="fn-syntax">=IF(조건1, 값1, IF(조건2, 값2, 값3))</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=IF(B5="라면",F5*5500,IF(B5="과자",F5*6500,F5*7700))</code><br>
+              라면이면 ×5500, 과자면 ×6500, 나머지(음료수)면 ×7700
+            </div>
+            <div class="fn-warn">⚠️ 마지막 항목은 조건 없이 값만 — 괄호 개수 주의!</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">IFS</span><span class="fn-cat">다중 조건</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">여러 조건을 나열해서 첫 번째로 참인 조건의 값을 반환합니다. IF 중첩보다 가독성 좋음.</div>
+            <div class="fn-syntax">=IFS(조건1, 값1, 조건2, 값2, ...)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=IFS(D5=1,"남성",D5=2,"여성")</code><br>
+              D5=1이면 "남성", D5=2이면 "여성"
+            </div>
+            <div class="fn-warn">⚠️ 문제에서 IFS 지정 시 IF로 작성하면 0점</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">CHOOSE</span><span class="fn-cat">인덱스 선택</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">인덱스 번호에 해당하는 값을 순서대로 반환합니다. 코드가 1,2,3 연속일 때 깔끔.</div>
+            <div class="fn-syntax">=CHOOSE(인덱스, 값1, 값2, 값3, ...)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=CHOOSE(D5,"남성","여성")</code><br>
+              D5=1이면 "남성"(1번째), D5=2이면 "여성"(2번째)
+            </div>
+            <div class="fn-warn">⚠️ 인덱스가 1부터 시작. 0이나 범위 초과 시 오류</div>
+          </div>
+        </div>
+      </div>
+      <!-- IF vs IFS vs CHOOSE 비교 -->
+      <div class="concept-card">
+        <div class="concept-title"><span class="concept-num">비교</span>IF vs IFS vs CHOOSE — 언제 어떤 걸 쓸까</div>
+        <table class="cmp-table">
+          <thead><tr><th>함수</th><th>적합한 상황</th><th>주의점</th></tr></thead>
+          <tbody>
+            <tr><td>IF</td><td>조건 2~3개, 가장 범용적</td><td>중첩 깊어지면 괄호 실수 多</td></tr>
+            <tr><td>IFS</td><td>조건 3개 이상, 가독성 중요</td><td>Excel 2019 이상에서만 지원</td></tr>
+            <tr><td>CHOOSE</td><td>코드가 1,2,3... 정수 연속일 때</td><td>코드가 숫자 아니면 사용 불가</td></tr>
+          </tbody>
+        </table>
+        <div class="concept-body">실제 시험에서는 문제에 함수가 <strong>지정되어 있으면 반드시 그것만 사용</strong>해야 합니다. 지정이 없으면 셋 중 아무거나 써도 됩니다.</div>
+      </div>
+    </div>
+
+    <!-- SUM 계열 -->
+    <div class="spanel" id="sp-sum">
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">SUMIF</span><span class="fn-cat">조건 합계</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건 범위에서 조건을 만족하는 행의 합산 범위를 더합니다. 조건 1개.</div>
+            <div class="fn-syntax">=SUMIF(조건범위, 조건, 합산범위)</div>
+            <div class="fn-ex"><div class="ex-label">숫자 조건</div>
+              <code>=SUMIF(F5:F16,"&lt;20",I5:I16)</code><br>
+              F열이 20 미만인 행의 I열 합계
+            </div>
+            <div class="fn-ex" style="margin-top:6px"><div class="ex-label">텍스트 조건</div>
+              <code>=SUMIF(H5:H16,"여성",I5:I16)</code><br>
+              H열이 "여성"인 행의 I열 합계
+            </div>
+            <div class="fn-warn">⚠️ 문제에서 SUMIF/SUMIFS 지정 시 다른 함수 사용하면 <strong>즉시 0점</strong></div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">SUMIFS</span><span class="fn-cat">다중 조건 합계</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건이 2개 이상일 때 사용합니다. 합산범위가 맨 앞에 오는 것이 SUMIF와 다릅니다.</div>
+            <div class="fn-syntax">=SUMIFS(합산범위, 조건범위1, 조건1, 조건범위2, 조건2)</div>
+            <div class="fn-ex"><div class="ex-label">예시 — 범위 조건 2개</div>
+              <code>=SUMIFS(K5:K16,J5:J16,"&gt;=10000",J5:J16,"&lt;20000")</code><br>
+              J열이 10000 이상 20000 미만인 행의 K열 합계
+            </div>
+            <div class="fn-warn">⚠️ SUMIF와 인수 순서 다름! SUMIFS는 <strong>합산범위가 첫 번째</strong></div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">AVERAGEIF</span><span class="fn-cat">조건 평균</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건을 만족하는 행만 골라 평균을 구합니다. SUMIF의 평균 버전.</div>
+            <div class="fn-syntax">=AVERAGEIF(조건범위, 조건, 평균범위)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=ROUND(AVERAGEIF(H5:H16,"여성",K5:K16),0)</code><br>
+              여성인 행의 K열 계산금액 평균 (반올림)
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">SUMIF vs SUMIFS</span><span class="fn-cat">헷갈리는 포인트</span></div>
+          <div class="fn-body">
+            <table class="cmp-table" style="font-size:.72rem">
+              <thead><tr><th></th><th>SUMIF</th><th>SUMIFS</th></tr></thead>
+              <tbody>
+                <tr><td>조건 수</td><td>1개</td><td>2개 이상</td></tr>
+                <tr><td>합산범위 위치</td><td>세 번째</td><td><strong>첫 번째</strong></td></tr>
+                <tr><td>구조</td><td>(조건범위, 조건, 합산)</td><td>(합산, 조건범위, 조건, ...)</td></tr>
+              </tbody>
+            </table>
+            <div class="fn-warn" style="margin-top:8px">조건 1개여도 SUMIFS 써도 됩니다. 반대로 조건 2개에 SUMIF는 불가.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNT 계열 -->
+    <div class="spanel" id="sp-count">
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">COUNTIF</span><span class="fn-cat">조건 개수</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건을 만족하는 셀의 개수를 셉니다. 와일드카드(*,?)로 문자 포함 검색 가능.</div>
+            <div class="fn-syntax">=COUNTIF(범위, 조건)</div>
+            <div class="fn-ex"><div class="ex-label">문자 포함 검색</div>
+              <code>=COUNTIF(C5:C16,"*영*")&"명"</code><br>
+              C열에 "영"이 포함된 셀 개수 → "3명" 형태 출력
+            </div>
+            <div class="fn-warn">⚠️ 와일드카드: * = 임의 문자열, ? = 문자 1개. 반드시 큰따옴표 안에!</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">COUNTIFS</span><span class="fn-cat">다중 조건 개수</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">조건이 2개 이상일 때 사용. 모든 조건을 동시에 만족하는 행만 셉니다.</div>
+            <div class="fn-syntax">=COUNTIFS(범위1, 조건1, 범위2, 조건2)</div>
+            <div class="fn-ex"><div class="ex-label">예시 — 이름+성별 동시 조건</div>
+              <code>=COUNTIFS(C5:C16,"*영*",H5:H16,"여성")&"명"</code><br>
+              이름에 "영" 포함 + 여성인 사람 수
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">&"단위" 연결</span><span class="fn-cat">텍스트 결합</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">숫자 결과에 텍스트 단위를 붙여서 출력할 때 사용합니다.</div>
+            <div class="fn-syntax">=수식&"단위"</div>
+            <div class="fn-ex"><div class="ex-label">예시들</div>
+              <code>=COUNTIF(C5:C16,"*영*")&"명"</code> → 3명<br>
+              <code>=AVERAGEIF(...)&"원"</code> → 125000원<br>
+              <code>=SMALL(K5:K16,2)&"원"</code> → 45000원
+            </div>
+            <div class="fn-warn">⚠️ &"명" 연결 시 결과가 텍스트가 됨 → 숫자로 다시 계산 불가. 용도에 맞게 사용.</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">와일드카드</span><span class="fn-cat">패턴 검색</span></div>
+          <div class="fn-body">
+            <table class="cmp-table" style="font-size:.72rem">
+              <thead><tr><th>기호</th><th>의미</th><th>예시</th></tr></thead>
+              <tbody>
+                <tr><td>*</td><td>임의 개수 문자</td><td>"*영*" = 어디든 "영" 포함</td></tr>
+                <tr><td>?</td><td>문자 정확히 1개</td><td>"영?" = "영" + 1글자</td></tr>
+                <tr><td>"영*"</td><td>"영"으로 시작</td><td>영수, 영희, 영...</td></tr>
+                <tr><td>"*영"</td><td>"영"으로 끝남</td><td>수영, 지영, ...영</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VLOOKUP -->
+    <div class="spanel" id="sp-lookup">
+      <div class="concept-card">
+        <div class="concept-title"><span class="concept-num">!</span>VLOOKUP — 단가 테이블 참조</div>
+        <div class="concept-body">
+          실제 시험에서 단가를 IF 중첩 대신 <strong>별도 테이블로 만들어 VLOOKUP으로 참조</strong>하는 유형이 출제됩니다.<br><br>
+          <strong>기본 구조</strong>
+        </div>
+      </div>
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">VLOOKUP</span><span class="fn-cat">수직 검색</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">찾을 값을 테이블 첫 번째 열에서 찾아 지정한 열 번호의 값을 반환합니다.</div>
+            <div class="fn-syntax">=VLOOKUP(찾을값, 테이블범위, 열번호, [일치방식])</div>
+            <div class="fn-ex"><div class="ex-label">단가 테이블 참조 예시</div>
+              단가표 (N4:O6):<br>
+              N4: 라면 / O4: 5500<br>
+              N5: 과자 / O5: 6500<br>
+              N6: 음료수 / O6: 7700<br><br>
+              <code>=VLOOKUP(B5,$N$4:$O$6,2,0)*F5</code><br>
+              B5 상품명으로 단가를 찾아 F5 수량 곱하기
+            </div>
+            <div class="fn-warn">
+              ⚠️ 핵심 주의사항:<br>
+              1. 테이블 범위는 반드시 <strong>절대참조($)</strong> — 아래로 복사해도 범위 고정<br>
+              2. 열번호: 테이블에서 몇 번째 열인지 (단가는 2번째)<br>
+              3. 일치방식: <strong>0 = 정확히 일치</strong> (항상 0 사용)
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">절대참조 ($)</span><span class="fn-cat">필수 개념</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">수식을 복사해도 범위가 바뀌지 않도록 고정하는 기호.</div>
+            <div class="fn-syntax">$열$행 → 행·열 모두 고정<br>$열행 → 열만 고정<br>열$행 → 행만 고정</div>
+            <div class="fn-ex"><div class="ex-label">비교</div>
+              <code>N4:O6</code> → 복사하면 범위 이동 (오류)<br>
+              <code>$N$4:$O$6</code> → 복사해도 범위 고정 (정답)
+            </div>
+            <div class="fn-warn">⚠️ VLOOKUP, RANK 등 범위를 고정해야 하는 함수에서 $ 빠뜨리면 아래 행 복사 시 오류</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 함수 -->
+    <div class="spanel" id="sp-stat">
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">AVERAGE</span><span class="fn-cat">평균</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">범위의 평균을 구합니다. 항상 ROUND와 함께 사용해 정수로 반올림.</div>
+            <div class="fn-syntax">=ROUND(AVERAGE(범위), 소수자릿수)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=ROUND(AVERAGE(I5:I16),0)</code><br>
+              I5:I16 평균을 소수점 첫째자리에서 반올림 → 정수
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">RANK</span><span class="fn-cat">순위</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">지정한 값이 범위 내에서 몇 위인지 반환합니다.</div>
+            <div class="fn-syntax">=RANK(값, 범위, [순서])</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=RANK(K5,$K$5:$K$16,0)</code><br>
+              K5가 K5:K16 중 몇 위? (0=내림차순, 1=오름차순)
+            </div>
+            <div class="fn-warn">⚠️ 범위를 <strong>절대참조($)</strong>로 고정 필수. 아니면 아래 행 복사 시 범위가 밀림</div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">MAX / MIN</span><span class="fn-cat">최대·최소</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">범위에서 가장 큰 값(MAX) 또는 가장 작은 값(MIN)을 반환합니다.</div>
+            <div class="fn-syntax">=MAX(범위)  /  =MIN(범위)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=MAX(K5:K16)</code> → 계산금액 최댓값<br>
+              <code>=MIN(K5:K16)</code> → 계산금액 최솟값
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">LARGE / SMALL</span><span class="fn-cat">N번째 크기</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">범위에서 N번째로 크거나(LARGE) 작은(SMALL) 값을 반환합니다.</div>
+            <div class="fn-syntax">=LARGE(범위, N)  /  =SMALL(범위, N)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=LARGE(K5:K16,3)</code> → 3번째로 큰 값<br>
+              <code>=SMALL(K5:K16,2)&"원"</code> → 2번째로 작은 값+"원"
+            </div>
+            <div class="fn-warn">⚠️ MAX = LARGE(범위,1), MIN = SMALL(범위,1)과 같습니다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 텍스트 함수 -->
+    <div class="spanel" id="sp-text">
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">LEFT</span><span class="fn-cat">왼쪽 추출</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">텍스트의 왼쪽에서 지정한 글자수만큼 추출합니다.</div>
+            <div class="fn-syntax">=LEFT(텍스트, 글자수)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=LEFT(D5,1)</code><br>
+              "A-001" → "A" (왼쪽 1글자)
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">RIGHT</span><span class="fn-cat">오른쪽 추출</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">텍스트의 오른쪽에서 지정한 글자수만큼 추출합니다.</div>
+            <div class="fn-syntax">=RIGHT(텍스트, 글자수)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=RIGHT(D5,3)</code><br>
+              "A-001" → "001" (오른쪽 3글자)
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">MID</span><span class="fn-cat">중간 추출</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">텍스트의 지정 위치에서 지정 글자수만큼 추출합니다.</div>
+            <div class="fn-syntax">=MID(텍스트, 시작위치, 글자수)</div>
+            <div class="fn-ex"><div class="ex-label">예시</div>
+              <code>=MID(D5,3,3)</code><br>
+              "A-001" → "001" (3번째부터 3글자)
+            </div>
+          </div>
+        </div>
+        <div class="fn-card">
+          <div class="fn-head"><span class="fn-name">ROUND 계열</span><span class="fn-cat">반올림·올림·버림</span></div>
+          <div class="fn-body">
+            <div class="fn-desc">수치를 지정 자릿수로 처리합니다. 시험에서는 ROUND(정수)가 거의 필수.</div>
+            <div class="fn-syntax">=ROUND(수, 자릿수)   ← 반올림
+=ROUNDUP(수, 자릿수) ← 올림
+=ROUNDDOWN(수, 자릿수) ← 버림</div>
+            <div class="fn-ex"><div class="ex-label">자릿수 기준</div>
+              <code>=ROUND(값, 0)</code> → 정수 (소수점 첫째자리 반올림)<br>
+              <code>=ROUND(값, -3)</code> → 천단위 반올림
+            </div>
+            <div class="fn-warn">⚠️ 문제에서 "소수점 첫째자리에서 반올림하여 정수로" → <strong>ROUND(수식, 0)</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 정렬·서식 -->
+    <div class="spanel" id="sp-sort">
+      <div class="concept-card">
+        <div class="concept-title"><span class="concept-num">1</span>정렬(SORT) 순서 — 실격 주의 항목</div>
+        <div class="concept-body">
+          <strong>정렬은 함수식 기재(⑦⑨⑪) 전에 반드시 먼저 실행해야 합니다.</strong><br>
+          정렬 후 행 순서가 바뀌면 함수식의 셀 참조도 달라지기 때문입니다.<br><br>
+          <strong>정렬 실행 방법 (Excel)</strong><br>
+          ① 데이터 범위(B5:K16) 선택<br>
+          ② 데이터 탭 → 정렬<br>
+          ③ 기준 추가: 1순위 H열(성별) → 사용자 지정 목록에서 "여성, 남성" 순서 지정<br>
+          ④ 기준 추가: 2순위 K열(계산금액) → 내림차순
+        </div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-title"><span class="concept-num">2</span>셀 서식 — 금액 표시</div>
+        <div class="concept-body">
+          <ul class="ok-list">
+            <li>금액 셀(I·J·K열): <strong>통화 형식, ₩ 기호, 천단위 콤마, 소수점 0자리</strong></li>
+            <li>숫자 셀(수량·연령 등): 콤마 없음, 우측 정렬</li>
+            <li>문자 셀(성명·성별 등): 가운데 정렬</li>
+            <li>제목 글꼴 크기: <strong>20pt</strong></li>
+          </ul>
+          <ul class="ng-list" style="margin-top:8px">
+            <li>할인율(G열)에 ₩ 붙이지 않기 — 백분율 형식 그대로</li>
+            <li>수량에 콤마 붙이지 않기</li>
+          </ul>
+        </div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-title"><span class="concept-num">3</span>함수식 기재 (⑦⑨⑪) — 텍스트로 보이게</div>
+        <div class="concept-body">
+          함수식이 <strong>계산되지 않고 수식 그대로 출력</strong>되어야 합니다.<br><br>
+          <strong>방법 1</strong>: 셀 서식을 <strong>텍스트</strong>로 변경 후 수식 입력<br>
+          <strong>방법 2</strong>: 셀에 <code>'</code>(작은따옴표) 먼저 입력 후 수식 입력<br>
+          예: <code>'=SUMIF(F5:F16,"&lt;20",I5:I16)</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자주 틀리는 것 -->
+    <div class="spanel" id="sp-mistake">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>SUMIF vs SUMIFS 인수 순서</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li><code>=SUMIF(<strong>합산범위</strong>, 조건범위, 조건)</code> — 틀림!</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li><code>=SUMIF(조건범위, 조건, <strong>합산범위</strong>)</code> — 맞음</li>
+              <li><code>=SUMIFS(<strong>합산범위</strong>, 조건범위, 조건)</code> — 맞음</li>
+            </ul>
+          </div>
+        </div>
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>RANK 절대참조 빠뜨리기</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li><code>=RANK(K5,K5:K16,0)</code> → 아래로 복사하면 범위가 K6:K17로 밀림</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li><code>=RANK(K5,<strong>$K$5:$K$16</strong>,0)</code> → 범위 고정</li>
+            </ul>
+          </div>
+        </div>
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>와일드카드 따옴표 밖에 쓰기</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li><code>=COUNTIF(C5:C16,*영*)</code> → 오류</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li><code>=COUNTIF(C5:C16,<strong>"*영*"</strong>)</code> → 맞음</li>
+            </ul>
+          </div>
+        </div>
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>정렬 전에 함수식 기재</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li>수식 먼저 작성 → 정렬 → 함수식 기재 (⑦⑨⑪)</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li>수식 작성 → <strong>정렬 먼저</strong> → 그 다음 함수식 기재</li>
+            </ul>
+          </div>
+        </div>
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>IF 중첩 괄호 개수 오류</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li><code>=IF(B5="라면",F5*5500,IF(B5="과자",F5*6500,F5*7700)</code> → 괄호 1개 부족</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li><code>=IF(B5="라면",F5*5500,IF(B5="과자",F5*6500,F5*7700)<strong>)</strong></code></li>
+              <li>IF 중첩 n번 → 닫는 괄호 n+1개 필요</li>
+            </ul>
+          </div>
+        </div>
+        <div class="concept-card" style="border-color:#fecaca">
+          <div class="concept-title"><span class="concept-num" style="background:var(--ng)">!</span>SUMIFS 수치에 콤마 넣기</div>
+          <div class="concept-body">
+            <ul class="ng-list">
+              <li><code>">=${10,000}"</code> → 오류 (콤마가 인수 구분자로 인식)</li>
+            </ul>
+            <ul class="ok-list" style="margin-top:6px">
+              <li><code>">=10000"</code> → 맞음 (콤마 없이)</li>
+              <li>문제에서도 "수치는 10000과 20000을 사용"이라고 명시</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div><!-- end mp-study -->
+
+  <!-- ══ 실전 가이드 패널 ══ -->
+  <div class="main-panel" id="mp-guide">
+  <div class="set-select" style="padding-bottom:3rem">
+    <div style="padding-top:2rem">
       <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem">실전 작업 & 출력 가이드</div>
       <h2 style="font-size:1.4rem;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem">Excel 실제 작업 → 출력까지</h2>
       <p style="font-size:.82rem;color:var(--ink2);margin-bottom:1.5rem;line-height:1.8">수식 암기 후 실제 Excel에서 이 순서대로 작업하세요. 출력 주의사항을 지키지 않으면 감점입니다.</p>
@@ -463,9 +995,10 @@ K22: =SUMIFS(K5:K16,J5:J16,"&gt;=10000",J5:J16,"&lt;20000")</div>
         </div>
       </div>
 
-    </div><!-- end guide -->
+    </div><!-- end guide inner -->
   </div>
-</div>
+  </div><!-- end mp-guide -->
+</div><!-- end s-setselect -->
 
 <!-- INTRO -->
 <div class="screen" id="s-intro">
@@ -1603,6 +2136,22 @@ function getVariantTableRows(s){
 function getVariantSorted(s){
   if(s.sorted) return s.sorted;
   return makeSorted(s);
+}
+
+// ── MAIN TABS ──
+function switchMain(id, el){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.main-panel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('mp-'+id).classList.add('on');
+}
+
+// ── STUDY TABS ──
+function switchStudy(id, el){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.spanel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('sp-'+id).classList.add('on');
 }
 
 // ── GUIDE TABS ──
